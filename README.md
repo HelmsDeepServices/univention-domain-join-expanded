@@ -2,10 +2,11 @@
 SPDX-FileCopyrightText: 2017-2025 Univention GmbH
 SPDX-License-Identifier: AGPL-3.0-only
 -->
-# Univention Domain Join
+# Univention Domain Join - Debian 12
 
-This is an assistant for joining [Ubuntu](https://ubuntu.com/about/release-cycle) and [Linux Mint](https://www.linuxmint.com/download_all.php) computers into Univention Corporate
-Server (UCS) domains. It will perform the following steps for you:
+This is an assistant for joining Debian 12 computers into Univention Corporate
+Server (UCS) domains. It is based off the official Univention Domain Join package for Ubuntu 24.04. 
+It will perform the following steps for you:
 
 - Create an LDAP object for your Ubuntu computer on UCS
 - Configure DNS
@@ -16,25 +17,11 @@ Server (UCS) domains. It will perform the following steps for you:
 
 Univention Domain Join supports the following Linux distributions:
 
-- `ubuntu24.04`
-  - Ubuntu 24.04 LTS ("Noble Numbat")
-- `ubuntu22.04`
-  - Ubuntu 22.04 LTS („Jammy Jellyfish“)
-  - Linux Mint 21 („Vanessa“)
-- `ubuntu20.04`
-  - Ubuntu 20.04 LTS („Focal Fossa“)
-  - Linux Mint 20 („Ulyana“)
-- `ubuntu18.04`
-  - Ubuntu 18.04 LTS („Bionic Beaver“)
-  - Linux Mint 19.2 („Tara“)
-- `ubuntu17.10`
-  - Ubuntu 17.10 („Artful Aardvark“)
-- `ubuntu16.04`
-  - Ubuntu 16.04 LTS („Xenial Xerus“)
-- `ubuntu14.04`
-  - Ubuntu 14.04 LTS („Trusty Tahr“)
+- `debian12`
+  - Debian 12 („Bookworm“))
+  - Debian 12 LXC (Proxmox)
 
-The actual source code for the different Ubuntu releases can be found in
+The actual source code for the different releases can be found in
 the corresponding git branches.
 
 Univention Domain Join supports the Gnome and Unity desktop environments. The
@@ -42,23 +29,46 @@ configuration of the login manager of other desktop environments may not work,
 but can be skipped using the `--skip-login-manager` parameter of the
 `univention-domain-join-cli` tool.
 
+# Limitations:
+
+- Not tested with a desktop environment, only tested with `univention-domain-join-cli` and the `--skip-login-manager` flag.
+- Configuration of the NTP server has been disabled. This is only necessary for Debian in containers (Such as LXC/Proxmox) and can be reenabled by uncommenting lines 73-76 of univention_domain_join/join_steps/kerberos_configurator.py. However, this feature has not been tested yet. In the future this should be added as a flag for the cli. 
+- Operating system identification is handled using modified functions in univention_domain_join/utils/distributions.py which check for a Debian release. If Debian is identified, these functions will then return Ubuntu 24.04 to any of the other existing unmodified scripts that use them. While this appears harmless, all existing scripts need to be reviewed and adapted to Debian in the future. 
+
 # Download and Installation
 
-You can install Univention Domain Join assistant on Ubuntu via the [PPA of
-Univention](https://launchpad.net/~univention-dev/+archive/ubuntu/ppa) using
-these commands:
+You can run these Python scripts on your Debian machine directly without installing the official Univention Domain Join package, which is only available as an Ubuntu PPA. 
+
+Install Dependencies:
 
 ```shell
-sudo add-apt-repository ppa:univention-dev/ppa
-sudo apt-get update
-sudo DEBIAN_FRONTEND=noninteractive apt-get install univention-domain-join
+sudo apt update
+sudo apt install python3 sshpass heimdal-clients libsss-sudo libpam-sss libnss-sss sssd python3-dnspython python3-ipy python3-ldap python3-netifaces pip git libldap2-dev libsasl2-dev libldap-common
 ```
 
-Run the assistant using the start menu.
+Clone the repository and switch to branch `debian12`
 
-There is also a command line tool `univention-domain-join-cli`, which can be installed separately
-with the package `univention-domain-join-cli`.
-Run `sudo univention-domain-join-cli --help` for more details.
+```shell
+git clone https://github.com/HelmsDeepServices/univention-domain-join-expanded.git
+git switch debian12
+```
+
+Create a Virtual Environment, enter it, then install the source into the Virtual Environment.
+
+```shell
+cd univention-domain-join-expanded/
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install 
+```
+
+Attempt to run the `univention-domain-join-cli` tool and test root privileges.
+
+```shell
+sudo .venv/bin/python scripts/cli.py --help
+```
+
+If you see the help text, the `univention-domain-join-cli` tool should now be functional. Simply replace `--help` in the command above with the flags you need. When finished, you can safely remove the git directory `univention-domain-join-expanded/` completely, as well as certain dependencies such as pip, git, and potentially the following Python packages: python3-dnspython python3-ipy python3-ldap python3-netifaces. 
 
 # Doc
 
