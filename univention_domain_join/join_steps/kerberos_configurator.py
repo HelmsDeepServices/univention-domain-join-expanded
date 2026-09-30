@@ -69,8 +69,8 @@ class KerberosConfigurator(ConflictChecker):
 
     @execute_as_root
     def synchronize_time_with_master(self, dc_ip: str) -> None:
-        userinfo_logger.info('Synchronizing time with the DC')
-        subprocess.check_output(
-            ['ntpdate', '-b', '-u', '-t', '5', dc_ip],
-            stderr=subprocess.STDOUT
-        )
+        userinfo_logger.info('Synchronizing time with the DC - bypassed')
+        #subprocess.check_output(
+        #    ['ntpdate', '-b', '-u', '-t', '5', dc_ip],
+        #    stderr=subprocess.STDOUT
+        #)
