@@ -69,7 +69,7 @@ sudo univention-domain-join-expanded/dependencies/debian12.sh
 cd univention-domain-join-expanded/
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install 
+python -m pip install .
 ```
 
 ## Attempt to run the `univention-domain-join-cli` tool and test root privileges.
