@@ -15,8 +15,11 @@ It will perform the following steps for you:
 - Configure PAM
 - Configure SSSD
 
-Univention Domain Join supports the following Linux distributions:
+Univention Domain Join Extended supports the following Linux distributions:
 
+- `ubuntu2604`
+  - Ubuntu 26.04 LTS ("Resolute Raccoon")
+  - Ubuntu 26.04 LTS LXC (Proxmox)
 - `ubuntu2404`
   - Ubuntu 24.04 LTS ("Noble Numbat")
   - Ubuntu 24.04 LTS LXC (Proxmox)
