@@ -2,10 +2,10 @@
 SPDX-FileCopyrightText: 2017-2025 Univention GmbH
 SPDX-License-Identifier: AGPL-3.0-only
 -->
-# Univention Domain Join - Debian 12
+# Univention Domain Join Expanded
 
-This is an assistant for joining Debian 12 computers into Univention Corporate
-Server (UCS) domains. It is based off the official Univention Domain Join package for Ubuntu 24.04. 
+This is an assistant for joining Ubuntu, Debian, and other computers into Univention Corporate
+Server (UCS) domains. It is based off the official Univention Domain Join package for Ubuntu 24.04 LTS. 
 It will perform the following steps for you:
 
 - Create an LDAP object for your Ubuntu computer on UCS
@@ -17,6 +17,16 @@ It will perform the following steps for you:
 
 Univention Domain Join supports the following Linux distributions:
 
+- `ubuntu2404`
+  - Ubuntu 24.04 LTS ("Noble Numbat")
+  - Ubuntu 24.04 LTS LXC (Proxmox)
+- `ubuntu2204`
+  - Ubuntu 22.04 LTS („Jammy Jellyfish“)
+  - Ubuntu 22.04 LTS LXC (Proxmox)
+  - Linux Mint 21 („Vanessa“)
+- `debian13`
+  - Debian 13 („Trixie“))
+  - Debian 13 LXC (Proxmox)
 - `debian12`
   - Debian 12 („Bookworm“))
   - Debian 12 LXC (Proxmox)
@@ -39,21 +49,21 @@ but can be skipped using the `--skip-login-manager` parameter of the
 
 You can run these Python scripts on your Debian machine directly without installing the official Univention Domain Join package, which is only available as an Ubuntu PPA. 
 
-Install Dependencies:
-
-```shell
-sudo apt update
-sudo apt install python3 sshpass heimdal-clients libsss-sudo libpam-sss libnss-sss sssd python3-dnspython python3-ipy python3-ldap python3-netifaces pip git libldap2-dev libsasl2-dev libldap-common
-```
-
-Clone the repository and switch to branch `debian12`
+## Clone the repository 
 
 ```shell
 git clone https://github.com/HelmsDeepServices/univention-domain-join-expanded.git
-git switch debian12
 ```
 
-Create a Virtual Environment, enter it, then install the source into the Virtual Environment.
+## Install Dependencies:
+
+Run the appropriate script from the dependencies/ directory for your OS as root.
+
+```shell
+sudo univention-domain-join-expanded/dependencies/debian12.sh
+```
+
+## Create a Virtual Environment, enter it, then install the source into the Virtual Environment.
 
 ```shell
 cd univention-domain-join-expanded/
@@ -62,13 +72,19 @@ source .venv/bin/activate
 python -m pip install 
 ```
 
-Attempt to run the `univention-domain-join-cli` tool and test root privileges.
+## Attempt to run the `univention-domain-join-cli` tool and test root privileges.
 
 ```shell
 sudo .venv/bin/python scripts/cli.py --help
 ```
 
-If you see the help text, the `univention-domain-join-cli` tool should now be functional. Simply replace `--help` in the command above with the flags you need. When finished, you can safely remove the git directory `univention-domain-join-expanded/` completely, as well as certain dependencies such as pip, git, and potentially the following Python packages: python3-dnspython python3-ipy python3-ldap python3-netifaces. 
+## Execution and Cleanup
+
+If you see the help text, the `univention-domain-join-cli` tool should now be functional. Simply replace `--help` in the command above with the flags you need. When finished, you can safely remove the git directory `univention-domain-join-expanded/` completely, as well as some dependencies by running the dependency script you ran origonally with the `-c` flag: 
+
+```shell
+sudo univention-domain-join-expanded/dependencies/debian12.sh -c
+```
 
 # Doc
 
