@@ -39,6 +39,8 @@ def get_release() -> str:
             os_release[key] = value.strip('"')
 
     if os_release.get('ID') == 'debian':
+        if os_release.get('VERSION_ID') == '13':
+            return '26.04'
         return '24.04'
 
     return subprocess.check_output(
