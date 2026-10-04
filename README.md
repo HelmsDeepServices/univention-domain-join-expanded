@@ -47,10 +47,10 @@ but can be skipped using the `--skip-login-manager` parameter of the
 - Not tested with a desktop environment, only tested with `univention-domain-join-cli` and the `--skip-login-manager` flag.
 - No apt or yum repository exists for these modifications (yet). Execution of these scripts is accomplished using a Python venv, please see below for instructions. 
 
-# Application Reccomendations
+# Usage Reccomendations
 
 ```shell
-"usage: cli.py [-h] [--username USERNAME] [--password PASSWORD] [--password-file FILE] [--skip-login-manager] [--domain DOMAIN] [--dc-ip IP]
+usage: cli.py [-h] [--username USERNAME] [--password PASSWORD] [--password-file FILE] [--skip-login-manager] [--domain DOMAIN] [--dc-ip IP]
               [--force-ucs-dns] [--no-ntp-update] [--logfile FILE]
 
 Tool for joining a client computer into an UCS domain.
@@ -66,7 +66,7 @@ options:
   --force-ucs-dns       Change the system's DNS settings and set the UCS DC as DNS nameserver (default is to use the standard network settings, but make
                         sure the your system can resolve the hostname of the UCS DC and the UCS master system)
   --no-ntp-update       Do not synchronize time with the DC via ntp
-  --logfile, -L FILE    Path to log file /var/log/univention/domain-join-cli.log"
+  --logfile, -L FILE    Path to log file /var/log/univention/domain-join-cli.log
 ```
 
 - When using the CLI on a machine with no supported desktop environment installed, use `--skip-login-manager`
