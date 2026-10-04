@@ -96,7 +96,7 @@ class SssdConfigurator(ConflictChecker):
 
         subprocess.check_output(
             ['authselect', 'select', 'sssd', 'with-mkhomedir', '--force'],
-            env=env, stderr=subprocess.STDOUT
+            stderr=subprocess.STDOUT
         )
 
     @execute_as_root
