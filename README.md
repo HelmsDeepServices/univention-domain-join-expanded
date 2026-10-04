@@ -45,8 +45,32 @@ but can be skipped using the `--skip-login-manager` parameter of the
 # Limitations:
 
 - Not tested with a desktop environment, only tested with `univention-domain-join-cli` and the `--skip-login-manager` flag.
-- Configuration of the NTP server has been disabled. This is only necessary for Debian in containers (Such as LXC/Proxmox) and can be reenabled by uncommenting lines 73-76 of univention_domain_join/join_steps/kerberos_configurator.py. However, this feature has not been tested yet. In the future this should be added as a flag for the cli. 
-- Operating system identification is handled using modified functions in univention_domain_join/utils/distributions.py which check for a Debian release. If Debian is identified, these functions will then return Ubuntu 24.04 to any of the other existing unmodified scripts that use them. While this appears harmless, all existing scripts need to be reviewed and adapted to Debian in the future. 
+- No apt or yum repository exists for these modifications (yet). Execution of these scripts is accomplished using a Python venv, please see below for instructions. 
+
+# Application Reccomendations
+
+```shell
+"usage: cli.py [-h] [--username USERNAME] [--password PASSWORD] [--password-file FILE] [--skip-login-manager] [--domain DOMAIN] [--dc-ip IP]
+              [--force-ucs-dns] [--no-ntp-update] [--logfile FILE]
+
+Tool for joining a client computer into an UCS domain.
+
+options:
+  -h, --help            show this help message and exit
+  --username USERNAME   User name of a domain administrator
+  --password PASSWORD   Password for the domain administrator
+  --password-file FILE  Path to a file, containing the password for the domain administrator
+  --skip-login-manager  Do not configure the login manager
+  --domain DOMAIN       Domain name. Can be left out if the domain is configured for this system
+  --dc-ip IP            IP address of the UCS domain controller to join to. Can be used if --domain does not work. If unsure, use the IP of the UCS Master
+  --force-ucs-dns       Change the system's DNS settings and set the UCS DC as DNS nameserver (default is to use the standard network settings, but make
+                        sure the your system can resolve the hostname of the UCS DC and the UCS master system)
+  --no-ntp-update       Do not synchronize time with the DC via ntp
+  --logfile, -L FILE    Path to log file /var/log/univention/domain-join-cli.log"
+```
+
+- When using the CLI on a machine with no supported desktop environment installed, use `--skip-login-manager`
+- When using the CLI inside a Proxmox LXC container, use `--no-ntp-update` since NTP is handled on the host OS. Ensure that your Proxmox host is configured to use the NTP server of your Univention Corperate Server instance. 
 
 # Download and Installation
 
