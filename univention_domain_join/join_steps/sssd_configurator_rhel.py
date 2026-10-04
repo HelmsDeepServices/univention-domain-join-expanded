@@ -104,6 +104,6 @@ class SssdConfigurator(ConflictChecker):
         userinfo_logger.info('Restarting SSSD')
 
         subprocess.check_output(
-            ['service', 'sssd', 'restart'],
+            ['systemctl', 'restart', 'sssd'],
             stderr=subprocess.STDOUT
         )
