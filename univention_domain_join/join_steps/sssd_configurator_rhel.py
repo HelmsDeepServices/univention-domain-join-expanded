@@ -99,6 +99,13 @@ class SssdConfigurator(ConflictChecker):
             ['authselect', 'select', 'sssd', 'with-mkhomedir', '--force'],
             stderr=subprocess.STDOUT
         )
+        
+        # Enable and start oddjobd for home directory creation via dbus
+        userinfo_logger.info('Enabling and starting oddjobd service')
+        subprocess.check_output(
+            ['systemctl', 'enable', '--now', 'oddjobd'],
+            stderr=subprocess.STDOUT
+        )
 
     @execute_as_root
     def restart_sssd(self) -> None:

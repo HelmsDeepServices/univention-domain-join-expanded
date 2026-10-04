@@ -32,7 +32,7 @@ else
     dnf clean all
     dnf update -y
     dnf groupinstall "Development Tools"
-    dnf install python3 sshpass krb5-workstation krb5-libs sssd-common sssd-client sssd sssd-client sssd-tools sssd-ldap sssd-krb5 python3-dns python3-ipython python3-ldap python3-netifaces python3-pip git openldap-devel cyrus-sasl-devel openldap openldap-clients python3-setuptools python3-wheel python3-devel wget
+    dnf install python3 sshpass krb5-workstation krb5-libs sssd-common sssd-client sssd sssd-client sssd-tools sssd-ldap sssd-krb5 python3-dns python3-ipython python3-ldap python3-netifaces python3-pip git openldap-devel cyrus-sasl-devel openldap openldap-clients python3-setuptools python3-wheel python3-devel wget oddjob-mkhomedir
     dnf install ntpsec
 fi
 
