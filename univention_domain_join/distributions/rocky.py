@@ -10,10 +10,10 @@ from typing import Dict
 from univention_domain_join.distributions import AbstractJoiner
 from univention_domain_join.join_steps.dns_configurator_rhel import DnsConfigurator
 from univention_domain_join.join_steps.kerberos_configurator import KerberosConfigurator
-from univention_domain_join.join_steps.ldap_configurator import LdapConfigurator
+from univention_domain_join.join_steps.ldap_configurator_rhel import LdapConfigurator
 from univention_domain_join.join_steps.login_manager_configurator_rhel import LoginManagerConfigurator
 from univention_domain_join.join_steps.pam_configurator_rhel import PamConfigurator
-from univention_domain_join.join_steps.sssd_configurator import SssdConfigurator
+from univention_domain_join.join_steps.sssd_configurator_rhel import SssdConfigurator
 from univention_domain_join.utils import ldap
 from univention_domain_join.utils.general import execute_as_root, name_is_resolvable
 
