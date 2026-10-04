@@ -8,7 +8,7 @@ import stat
 import subprocess
 from shutil import copyfile
 
-from univention_domain_join.join_steps.root_certificate_provider_ldap import RootCertificateProvider
+from univention_domain_join.join_steps.root_certificate_provider_rhel import RootCertificateProvider
 from univention_domain_join.utils.general import execute_as_root
 from univention_domain_join.utils.ldap import get_machines_udm
 
