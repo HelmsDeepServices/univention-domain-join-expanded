@@ -45,12 +45,8 @@ class PamConfigurator(ConflictChecker):
 
     def setup_pam(self) -> None:
         self.add_users_to_requiered_system_groups()
-        custom_profile_created = self.create_custom_authselect_profile()
-        if custom_profile_created:
-            self.apply_custom_authselect_profile()
-        else:
-            # Fallback to default profile with manual edits
-            self.apply_default_profile_with_edits()
+        self.create_custom_authselect_profile()
+        self.apply_custom_authselect_profile()
 
 
     def add_users_to_requiered_system_groups(self) -> None:
@@ -80,14 +76,14 @@ class PamConfigurator(ConflictChecker):
     def create_custom_authselect_profile(self) -> None:
         if self.custom_authselect_profile_exists():
             userinfo_logger.info('Custom authselect profile already exists, skipping creation')
-            return
+            return True
 
         userinfo_logger.info('Creating custom authselect profile')
         
         try:
-            # Use authselect create-profile to create the custom profile with mkhomedir
+            # Use authselect create-profile to create the custom profile (without mkhomedir flag)
             subprocess.check_output(
-                ['authselect', 'create-profile', 'ucs-join', '-b', 'sssd', '--with-mkhomedir'],
+                ['authselect', 'create-profile', 'ucs-join', '-b', 'sssd'],
                 stderr=subprocess.STDOUT
             )
         except subprocess.CalledProcessError as e:
@@ -104,6 +100,26 @@ class PamConfigurator(ConflictChecker):
                 with open(system_auth_path, 'a') as f:
                     f.write('auth        required      pam_group.so use_first_pass\n')
                 userinfo_logger.info('Added pam_group.so to custom profile system-auth')
+        
+        # Add pam_mkhomedir.so to password-auth and system-auth for home directory creation
+        for auth_file in ['system-auth', 'password-auth']:
+            auth_path = f'/etc/authselect/custom/ucs-join/{auth_file}'
+            if os.path.isfile(auth_path):
+                with open(auth_path, 'r') as f:
+                    content = f.read()
+                if 'pam_mkhomedir.so' not in content:
+                    # Insert pam_mkhomedir.so in the session section
+                    lines = content.split('\n')
+                    new_lines = []
+                    for line in lines:
+                        new_lines.append(line)
+                        if line.strip().startswith('session') and 'pam_mkhomedir.so' not in content:
+                            # Add mkhomedir after the first session line
+                            if 'pam_mkhomedir.so' not in '\n'.join(new_lines):
+                                new_lines.append('session     required      pam_mkhomedir.so umask=0022 skel=/etc/skel')
+                    with open(auth_path, 'w') as f:
+                        f.write('\n'.join(new_lines))
+                    userinfo_logger.info(f'Added pam_mkhomedir.so to {auth_file}')
         
         userinfo_logger.info('Custom authselect profile created')
         return True
