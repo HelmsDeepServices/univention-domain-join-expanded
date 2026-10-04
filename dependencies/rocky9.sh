@@ -23,9 +23,14 @@ if $cleanup; then
     apt-mark auto python3 python3-dnspython python3-ipy python3-ldap python3-netifaces pip git python3-venv
     apt autoremove -y --purge
 else
-    echo "Installing Dependencies for *Rocky 9*"
-    apt update
-    apt install python3 sshpass heimdal-clients libsss-sudo libpam-sss libnss-sss sssd python3-dnspython python3-ipy python3-ldap python3-venv python3-netifaces pip git libldap2-dev libsasl2-dev libldap-common
-    apt install ntpsec-ntpdate
+    echo "Updating Repository Information, Upgrading all packages, and Installing Dependencies for *Rocky 9*"
+    read -r -p "Press [Enter] to continue..."
+    dnf update -y
+    dnf install epel-release
+    dnf config-manager --set-enabled crb
+    dnf clean all
+    dnf update -y
+    dnf install python3 sshpass krb5-workstation krb5-libs sssd-common sssd-client sssd sssd-client sssd-tools sssd-ldap sssd-krb5 python3-dns python3-ipython python3-ldap python3-netifaces python3-pip git openldap-devel cyrus-sasl-devel openldap openldap-clients
+    dnf install ntpsec
 fi
 
