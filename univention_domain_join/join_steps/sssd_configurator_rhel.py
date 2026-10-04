@@ -62,6 +62,7 @@ class SssdConfigurator(ConflictChecker):
             '\n' \
             '[pam]\n' \
             'reconnection_retries = 3\n' \
+            'mkhomedir = True\n' \
             '\n' \
             '[domain/%(kerberos_realm)s]\n' \
             'auth_provider = krb5\n' \
