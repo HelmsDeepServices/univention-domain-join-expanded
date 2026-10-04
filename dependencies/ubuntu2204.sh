@@ -4,7 +4,7 @@ cleanup=false
 
 while getopts "c" opt; do
     case "$opt" in
-        v) verbose=true ;;
+        c) cleanup=true ;;
     esac
 done
 
