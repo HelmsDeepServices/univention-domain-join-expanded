@@ -19,6 +19,12 @@ class ConflictChecker(object):
             return True
         return False
 
+    def custom_authselect_profile_exists(self) -> bool:
+        if os.path.isdir('/etc/authselect/custom/ucs-join'):
+            userinfo_logger.warn('Warning: Custom authselect profile already exists.')
+            return True
+        return False
+
 
 class PamConfigurator(ConflictChecker):
 
@@ -30,10 +36,17 @@ class PamConfigurator(ConflictChecker):
                 '/etc/security/group.conf',
                 os.path.join(backup_dir, 'etc/security/group.conf')
             )
+        if self.custom_authselect_profile_exists():
+            os.makedirs(os.path.join(backup_dir, 'etc/authselect/custom'), exist_ok=True)
+            subprocess.check_output(
+                ['cp', '-r', '/etc/authselect/custom/ucs-join', os.path.join(backup_dir, 'etc/authselect/custom/')],
+                stderr=subprocess.STDOUT
+            )
 
     def setup_pam(self) -> None:
         self.add_users_to_requiered_system_groups()
-        self.enable_pam_group()
+        self.create_custom_authselect_profile()
+        self.apply_custom_authselect_profile()
 
 
     def add_users_to_requiered_system_groups(self) -> None:
@@ -60,18 +73,46 @@ class PamConfigurator(ConflictChecker):
         return False
 
     @execute_as_root
-    def enable_pam_group(self) -> None:
-        userinfo_logger.info('Enabling pam_group.so in PAM configuration')
+    def create_custom_authselect_profile(self) -> None:
+        if self.custom_authselect_profile_exists():
+            userinfo_logger.info('Custom authselect profile already exists, skipping creation')
+            return
+
+        userinfo_logger.info('Creating custom authselect profile')
         
-        # Check if pam_group.so is already enabled in system-auth
-        system_auth_path = '/etc/pam.d/system-auth'
+        # Create custom profile directory
+        os.makedirs('/etc/authselect/custom/ucs-join', exist_ok=True)
+        
+        # Copy base sssd profile files
+        subprocess.check_output(
+            ['cp', '-r', '/usr/share/authselect/default/sssd/*', '/etc/authselect/custom/ucs-join/'],
+            stderr=subprocess.STDOUT
+        )
+        
+        # Add pam_group.so to system-auth
+        system_auth_path = '/etc/authselect/custom/ucs-join/system-auth'
         if os.path.isfile(system_auth_path):
             with open(system_auth_path, 'r') as f:
                 content = f.read()
             if 'pam_group.so' not in content:
                 with open(system_auth_path, 'a') as f:
                     f.write('auth        required      pam_group.so use_first_pass\n')
-                userinfo_logger.info('Added pam_group.so to system-auth')
-            else:
-                userinfo_logger.info('pam_group.so already enabled in system-auth')
+                userinfo_logger.info('Added pam_group.so to custom profile system-auth')
+        
+        # Create profile requirements file
+        with open('/etc/authselect/custom/ucs-join/REQUIREMENTS', 'w') as f:
+            f.write('sssd\n')
+        
+        userinfo_logger.info('Custom authselect profile created')
+
+    @execute_as_root
+    def apply_custom_authselect_profile(self) -> None:
+        userinfo_logger.info('Applying custom authselect profile')
+        
+        subprocess.check_output(
+            ['authselect', 'select', 'custom/ucs-join', '--force'],
+            stderr=subprocess.STDOUT
+        )
+        
+        userinfo_logger.info('Custom authselect profile applied')
 

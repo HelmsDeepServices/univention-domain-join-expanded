@@ -52,16 +52,13 @@ class SssdConfigurator(ConflictChecker):
         sssd_conf = \
             '[sssd]\n' \
             'config_file_version = 2\n' \
-            'reconnection_retries = 3\n' \
             'sbus_timeout = 30\n' \
             'services = nss, pam, sudo\n' \
             'domains = %(kerberos_realm)s\n' \
             '\n' \
             '[nss]\n' \
-            'reconnection_retries = 3\n' \
             '\n' \
             '[pam]\n' \
-            'reconnection_retries = 3\n' \
             'mkhomedir = True\n' \
             '\n' \
             '[domain/%(kerberos_realm)s]\n' \
@@ -96,7 +93,7 @@ class SssdConfigurator(ConflictChecker):
         userinfo_logger.info('Configuring auth config profile for sssd')
 
         subprocess.check_output(
-            ['authselect', 'select', 'sssd', 'with-mkhomedir', '--force'],
+            ['authselect', 'select', 'custom/ucs-join', '--force'],
             stderr=subprocess.STDOUT
         )
         
