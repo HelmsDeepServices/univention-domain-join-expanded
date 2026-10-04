@@ -29,12 +29,13 @@ class DcResolveException(Exception):
 
 
 class Joiner(AbstractJoiner):
-    def __init__(self, ucr_variables: Dict[str, str], admin_username: str, admin_pw: str, dc_ip: str, skip_login_manager: bool, force_ucs_dns: bool) -> None:
+    def __init__(self, ucr_variables: Dict[str, str], admin_username: str, admin_pw: str, dc_ip: str, skip_login_manager: bool, force_ucs_dns: bool, no_ntp_update: bool) -> None:
         self.admin_username = admin_username
         self.admin_pw = admin_pw
         self.dc_ip = dc_ip
         self.skip_login_manager = skip_login_manager
         self.force_ucs_dns = force_ucs_dns
+        self.no_ntp_update = no_ntp_update
         self.domain = ucr_variables['domainname']
         self.nameservers = [
             ucr_variables['nameserver1'] if ucr_variables['nameserver1'] != "''" else '',
@@ -90,7 +91,7 @@ class Joiner(AbstractJoiner):
             PamConfigurator().setup_pam()
             if not self.skip_login_manager:
                 LoginManagerConfigurator().enable_login_with_foreign_usernames()
-            KerberosConfigurator().configure_kerberos(self.kerberos_realm, self.ldap_master, self.ldap_server_name, is_samba_dc, self.dc_ip)
+            KerberosConfigurator().configure_kerberos(self.kerberos_realm, self.ldap_master, self.ldap_server_name, is_samba_dc, self.dc_ip, self.no_ntp_update)
             # TODO: Stop avahi service to prevent problems with sssd?
             userinfo_logger.info('The domain join was successful.')
             userinfo_logger.info('Please reboot the system.')

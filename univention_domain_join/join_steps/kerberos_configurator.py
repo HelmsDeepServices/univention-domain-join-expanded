@@ -30,9 +30,10 @@ class KerberosConfigurator(ConflictChecker):
                 os.path.join(backup_dir, 'etc/krb5.conf')
             )
 
-    def configure_kerberos(self, kerberos_realm: str, ldap_master: str, ldap_server_name: str, is_samba_dc: bool, dc_ip: str) -> None:
+    def configure_kerberos(self, kerberos_realm: str, ldap_master: str, ldap_server_name: str, is_samba_dc: bool, dc_ip: str, no_ntp_update: bool) -> None:
         self.write_config_file(kerberos_realm, ldap_master, ldap_server_name, is_samba_dc)
-        self.synchronize_time_with_master(dc_ip)
+        if not no_ntp_update:
+            self.synchronize_time_with_master(dc_ip)
 
     @execute_as_root
     def write_config_file(self, kerberos_realm: str, ldap_master: str, ldap_server_name: str, is_samba_dc: bool) -> None:
@@ -69,8 +70,8 @@ class KerberosConfigurator(ConflictChecker):
 
     @execute_as_root
     def synchronize_time_with_master(self, dc_ip: str) -> None:
-        userinfo_logger.info('Synchronizing time with the DC - bypassed')
-        #subprocess.check_output(
-        #    ['ntpdate', '-b', '-u', '-t', '5', dc_ip],
-        #    stderr=subprocess.STDOUT
-        #)
+        userinfo_logger.info('Synchronizing time with the DC')
+        subprocess.check_output(
+            ['ntpdate', '-b', '-u', '-t', '5', dc_ip],
+            stderr=subprocess.STDOUT
+        )

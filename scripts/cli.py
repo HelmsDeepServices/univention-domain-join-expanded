@@ -48,7 +48,7 @@ def set_up_logging(logfile: str) -> None:
     debugging_logger.addHandler(logfile_handler)
 
 
-def get_joiner_for_this_distribution(dc_ip: str, admin_username: str, admin_pw: str, skip_login_manager: bool, force_ucs_dns: bool) -> AbstractJoiner:
+def get_joiner_for_this_distribution(dc_ip: str, admin_username: str, admin_pw: str, skip_login_manager: bool, force_ucs_dns: bool, no_ntp_update: bool) -> AbstractJoiner:
     distribution = get_distribution()
     try:
         distribution_join_module = importlib.import_module('univention_domain_join.distributions.%s' % (distribution.lower(),))
@@ -58,7 +58,7 @@ def get_joiner_for_this_distribution(dc_ip: str, admin_username: str, admin_pw: 
             admin_pw = get_admin_password(admin_username)
         check_if_ssh_works_with_given_account(dc_ip, admin_username, admin_pw)
         ucr_variables = get_ucr_variables_from_dc(dc_ip, admin_username, admin_pw)
-        return distribution_join_module.Joiner(ucr_variables, admin_username, admin_pw, dc_ip, skip_login_manager, force_ucs_dns)
+        return distribution_join_module.Joiner(ucr_variables, admin_username, admin_pw, dc_ip, skip_login_manager, force_ucs_dns, no_ntp_update)
     except ImportError:
         getLogger("userinfo").critical('The used distribution "%s" is not supported.' % (distribution,))
         exit(1)
@@ -113,6 +113,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--domain', help='Domain name. Can be left out if the domain is configured for this system')
     parser.add_argument('--dc-ip', help='IP address of the UCS domain controller to join to. Can be used if --domain does not work. If unsure, use the IP of the UCS Master', metavar="IP")
     parser.add_argument('--force-ucs-dns', action='store_true', help='Change the system\'s DNS settings and set the UCS DC as DNS nameserver (default is to use the standard network settings, but make sure the your system can resolve the hostname of the UCS DC and the UCS master system)')
+    parser.add_argument('--no-ntp-update', action='store_true', help='Do not synchronize time with the DC via ntp')
     parser.add_argument("--logfile", "-L", help="Path to log file %(default)s", metavar="FILE", default="/var/log/univention/domain-join-cli.log")
     args = parser.parse_args()
     return args
@@ -159,7 +160,7 @@ if __name__ == '__main__':
         else:
             password = None
 
-        distribution_joiner = get_joiner_for_this_distribution(args.dc_ip, args.username, password, args.skip_login_manager, args.force_ucs_dns)
+        distribution_joiner = get_joiner_for_this_distribution(args.dc_ip, args.username, password, args.skip_login_manager, args.force_ucs_dns, args.no_ntp_update)
         distribution_joiner.check_if_join_is_possible_without_problems()
         distribution_joiner.create_backup_of_config_files()
         distribution_joiner.join_domain()

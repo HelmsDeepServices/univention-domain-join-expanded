@@ -6,7 +6,7 @@ from typing import Dict
 
 
 class AbstractJoiner(object):
-    def __init__(self, ucr_variables: Dict[str, str], admin_username: str, admin_pw: str, dc_ip: str, skip_login_manager: bool, force_ucs_dns: bool) -> None:
+    def __init__(self, ucr_variables: Dict[str, str], admin_username: str, admin_pw: str, dc_ip: str, skip_login_manager: bool, force_ucs_dns: bool, no_ntp_update: bool) -> None:
         raise NotImplementedError()
 
     def check_if_join_is_possible_without_problems(self) -> None:
