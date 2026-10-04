@@ -95,13 +95,13 @@ class SssdConfigurator(ConflictChecker):
         userinfo_logger.info('Configuring auth config profile for sssd')
 
         subprocess.check_output(
-            ['pam-auth-update', '--enable', 'mkhomedir'],
-            stderr=subprocess.STDOUT
+            ['authselect', 'select', 'sssd', 'with-mkhomedir', '--force'],
+            env=env, stderr=subprocess.STDOUT
         )
 
     @execute_as_root
     def restart_sssd(self) -> None:
-        userinfo_logger.info('Restarting sssd')
+        userinfo_logger.info('Restarting SSSD')
 
         subprocess.check_output(
             ['service', 'sssd', 'restart'],

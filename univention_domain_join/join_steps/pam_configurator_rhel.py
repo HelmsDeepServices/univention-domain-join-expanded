@@ -110,11 +110,11 @@ class PamConfigurator(ConflictChecker):
 
     @execute_as_root
     def update_pam(self) -> None:
-        userinfo_logger.info('Updating PAM')
+        userinfo_logger.info('Restarting SSSD')
 
         env = os.environ.copy()
         env['DEBIAN_FRONTEND'] = 'noninteractive'
         subprocess.check_output(
-            ['pam-auth-update', '--force'],
+            ['systemctl', 'restart', 'sssd'],
             env=env, stderr=subprocess.STDOUT
         )

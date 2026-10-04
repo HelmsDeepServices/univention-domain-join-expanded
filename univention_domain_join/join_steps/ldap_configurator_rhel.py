@@ -23,8 +23,8 @@ class LdapConfigutationException(Exception):
 
 class ConflictChecker(object):
     def ldap_conf_exists(self) -> bool:
-        if os.path.isfile('/etc/ldap/ldap.conf'):
-            userinfo_logger.warn('Warning: /etc/ldap/ldap.conf already exists.')
+        if os.path.isfile('/etc/openldap/ldap.conf'):
+            userinfo_logger.warn('Warning: /etc/openldap/ldap.conf already exists.')
             return True
         return False
 
@@ -33,10 +33,10 @@ class LdapConfigurator(ConflictChecker):
     @execute_as_root
     def backup(self, backup_dir: str) -> None:
         if self.ldap_conf_exists():
-            os.makedirs(os.path.join(backup_dir, 'etc/ldap'), exist_ok=True)
+            os.makedirs(os.path.join(backup_dir, 'etc/openldap'), exist_ok=True)
             copyfile(
-                '/etc/ldap/ldap.conf',
-                os.path.join(backup_dir, 'etc/ldap/ldap.conf')
+                '/etc/openldap/ldap.conf',
+                os.path.join(backup_dir, 'etc/openldap/ldap.conf')
             )
 
     def configure_ldap(self, dc_ip: str, ldap_server_name: str, admin_username: str, admin_pw: str, ldap_base: str, admin_dn: str) -> None:
@@ -122,13 +122,13 @@ class LdapConfigurator(ConflictChecker):
 
     @execute_as_root
     def create_ldap_conf_file(self, ldap_server_name: str, ldap_base: str) -> None:
-        userinfo_logger.info('Writing /etc/ldap/ldap.conf ')
+        userinfo_logger.info('Writing /etc/openldap/ldap.conf ')
         ldap_conf = \
             "TLS_CACERT /etc/univention/ssl/ucsCA/CAcert.pem\n" \
             "URI ldap://%s:7389\n" \
             "BASE %s\n" % (ldap_server_name, ldap_base)
 
-        with open('/etc/ldap/ldap.conf', 'w') as conf_file:
+        with open('/etc/openldap/ldap.conf', 'w') as conf_file:
             conf_file.write(ldap_conf)
 
     @execute_as_root
