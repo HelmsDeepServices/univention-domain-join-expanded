@@ -11,6 +11,7 @@ done
 if $cleanup; then
     echo "Cleaning Up Dependencies for *Rocky 9*"
     echo "Will set the following packages to not manually installed, then run auto-remove:"
+    echo "WARNING: you may not want to run this on a machine you use for Python or C development. Verify each operation as script executes"
     echo "- python3"
     echo "- python3-dnspython"
     echo "- python3-ipy"
@@ -30,7 +31,8 @@ else
     dnf config-manager --set-enabled crb
     dnf clean all
     dnf update -y
-    dnf install python3 sshpass krb5-workstation krb5-libs sssd-common sssd-client sssd sssd-client sssd-tools sssd-ldap sssd-krb5 python3-dns python3-ipython python3-ldap python3-netifaces python3-pip git openldap-devel cyrus-sasl-devel openldap openldap-clients
+    dnf groupinstall "Development Tools"
+    dnf install python3 sshpass krb5-workstation krb5-libs sssd-common sssd-client sssd sssd-client sssd-tools sssd-ldap sssd-krb5 python3-dns python3-ipython python3-ldap python3-netifaces python3-pip git openldap-devel cyrus-sasl-devel openldap openldap-clients python3-setuptools python3-wheel python3-devel wget
     dnf install ntpsec
 fi
 

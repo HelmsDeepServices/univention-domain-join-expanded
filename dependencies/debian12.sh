@@ -25,7 +25,7 @@ if $cleanup; then
 else
     echo "Installing Dependencies for *Debian 12*"
     apt update
-    apt install python3 sshpass heimdal-clients libsss-sudo libpam-sss libnss-sss sssd python3-dnspython python3-ipy python3-ldap python3-venv python3-netifaces pip git libldap2-dev libsasl2-dev libldap-common
+    apt install python3 sshpass heimdal-clients libsss-sudo libpam-sss libnss-sss sssd python3-dnspython python3-ipy python3-ldap python3-venv python3-netifaces pip git libldap2-dev libsasl2-dev libldap-common wget
     apt install ntpsec-ntpdate
 fi
 
