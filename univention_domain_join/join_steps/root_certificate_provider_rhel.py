@@ -19,7 +19,7 @@ class RootCertificateProvider(object):
 
     def ucs_root_certificate_available_locally(self) -> bool:
         return os.path.isfile('/etc/univention/ssl/ucsCA/CAcert.pem') and \
-            os.path.isfile('/usr/local/share/ca-certificates/UCSdomain.crt')
+            os.path.islink('/etc/pki/ca-trust/source/anchors/UCSdomain.crt')
 
     @execute_as_root
     def download_ucs_root_certificate(self, dc_ip: str) -> None:
@@ -40,7 +40,10 @@ class RootCertificateProvider(object):
     def add_certificate_to_certificate_store(self) -> None:
         userinfo_logger.info('Adding the UCS root certificate to the certificate store')
 
-        os.symlink('/etc/univention/ssl/ucsCA/CAcert.pem', '/etc/pki/ca-trust/source/anchors/UCSdomain.crt')
+        if os.path.islink('/etc/pki/ca-trust/source/anchors/UCSdomain.crt'):
+            userinfo_logger.warn('Warning: /etc/pki/ca-trust/source/anchors/UCSdomain.crt already exists as a symlink.')
+        else:
+            os.symlink('/etc/univention/ssl/ucsCA/CAcert.pem', '/etc/pki/ca-trust/source/anchors/UCSdomain.crt')
         subprocess.check_output(
             ['update-ca-trust'],
             stderr=subprocess.STDOUT
