@@ -18,10 +18,10 @@ It will perform the following steps for you:
 Univention Domain Join Extended supports the following Linux distributions:
 
 - `ubuntu2604`
-  - Ubuntu 26.04 LTS ("Resolute Raccoon")
+  - Ubuntu 26.04 LTS („Resolute Raccoon")
   - Ubuntu 26.04 LTS LXC (Proxmox)
 - `ubuntu2404`
-  - Ubuntu 24.04 LTS ("Noble Numbat")
+  - Ubuntu 24.04 LTS („Noble Numbat")
   - Ubuntu 24.04 LTS LXC (Proxmox)
 - `ubuntu2204`
   - Ubuntu 22.04 LTS („Jammy Jellyfish“)
@@ -33,6 +33,9 @@ Univention Domain Join Extended supports the following Linux distributions:
 - `debian12`
   - Debian 12 („Bookworm“))
   - Debian 12 LXC (Proxmox)
+- `rocky9`
+  - Rocky Linux 9.8 („Blue Onyx“))
+  - Rocky Linux 9.8 LXC (Proxmox)
 
 The actual source code for the different releases can be found in
 the corresponding git branches.
