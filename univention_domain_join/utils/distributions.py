@@ -43,6 +43,9 @@ def get_release() -> str:
             return '26.04'
         return '24.04'
 
+    if os_release.get('ID') == 'rocky':
+        return os_release.get('VERSION_ID', '9')
+
     return subprocess.check_output(
         ['lsb_release', '-rs']
     ).strip().decode()
