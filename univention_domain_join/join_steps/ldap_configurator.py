@@ -89,7 +89,7 @@ class LdapConfigurator(ConflictChecker):
         release = get_release()
         # TODO: Also add MAC address. Which NIC's address should be used?
         udm_command = [
-            '/usr/sbin/udm', 'computers/ubuntu', 'create',
+            '/usr/sbin/udm', 'computers/linux', 'create',
             '--binddn', admin_dn,
             '--bindpwdfile', PW(admin_username),
             '--position', 'cn=computers,%s' % (ldap_base,),
