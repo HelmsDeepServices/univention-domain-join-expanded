@@ -34,8 +34,8 @@ Univention Domain Join Extended supports the following Linux distributions:
   - Debian 12 („Bookworm“))
   - Debian 12 LXC (Proxmox)
 - `rocky10`
-  - Rocky Linux 10.2 („Red Quartz“))
-  - Rocky Linux 10.2 LXC (Proxmox)
+  - Rocky Linux 10.0 („Red Quartz“))
+  - Rocky Linux 10.0 LXC (Proxmox)
 - `rocky9`
   - Rocky Linux 9.8 („Blue Onyx“))
   - Rocky Linux 9.8 LXC (Proxmox)
@@ -105,12 +105,6 @@ cd univention-domain-join-expanded/
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install .
-```
-
-On Rocky Linux, run the following before `pip install .`...
-
-```shell
-pip install --upgrade pip setuptools wheel
 ```
 
 ## Attempt to run the `univention-domain-join-cli` tool and test root privileges.
