@@ -7,3 +7,4 @@ debian/*/
 !debian/source/
 *.changes
 univention_domain_join.egg-info/
+.idea/

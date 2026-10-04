@@ -6,10 +6,23 @@ import os
 import socket
 import subprocess
 from functools import wraps
-from pipes import quote
 from typing import Any, Callable, List, TypeVar, Union, cast
 
+from univention_domain_join.utils.distributions import get_release
+
 F = TypeVar('F', bound=Callable[..., Any])
+
+# pipes module was removed in Python 3.13 (Ubuntu 26.04)
+# Use shlex.quote as a replacement for Ubuntu 26.04
+try:
+    release = get_release()
+except Exception:
+    release = "0.0"
+
+if release == "26.04":
+    from shlex import quote
+else:
+    from pipes import quote
 
 
 def execute_as_root(func: F) -> F:
