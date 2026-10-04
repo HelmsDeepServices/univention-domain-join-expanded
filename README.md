@@ -4,7 +4,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 # Univention Domain Join Expanded
 
-This is an assistant for joining Ubuntu, Debian, and other computers into Univention Corporate
+This is an assistant for joining Ubuntu, Debian, Rocky Linux, and other computers into Univention Corporate
 Server (UCS) domains. It is based off the official Univention Domain Join package for Ubuntu 24.04 LTS. 
 It will perform the following steps for you:
 
@@ -33,6 +33,9 @@ Univention Domain Join Extended supports the following Linux distributions:
 - `debian12`
   - Debian 12 („Bookworm“))
   - Debian 12 LXC (Proxmox)
+- `rocky10`
+  - Rocky Linux 10.2 („Red Quartz“))
+  - Rocky Linux 10.2 LXC (Proxmox)
 - `rocky9`
   - Rocky Linux 9.8 („Blue Onyx“))
   - Rocky Linux 9.8 LXC (Proxmox)
@@ -49,6 +52,8 @@ but can be skipped using the `--skip-login-manager` parameter of the
 
 - Not tested with a desktop environment, only tested with `univention-domain-join-cli` and the `--skip-login-manager` flag.
 - No apt or yum repository exists for these modifications (yet). Execution of these scripts is accomplished using a Python venv, please see below for instructions. 
+- Updating NTP settings on Rocky Linux is not yet implemented properly. Need to switch to Chrony in the future, for now this can be done manually.
+- Support for any Desktop Environments outside of the versions supported in the origonal/official Univention Domain Join application is not yet implemented. 
 
 # Usage Reccomendations
 
@@ -100,6 +105,12 @@ cd univention-domain-join-expanded/
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install .
+```
+
+On Rocky Linux, run the following before `pip install .`...
+
+```shell
+pip install --upgrade pip setuptools wheel
 ```
 
 ## Attempt to run the `univention-domain-join-cli` tool and test root privileges.
