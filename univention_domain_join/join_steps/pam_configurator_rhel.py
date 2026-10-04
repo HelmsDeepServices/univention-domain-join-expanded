@@ -45,8 +45,12 @@ class PamConfigurator(ConflictChecker):
 
     def setup_pam(self) -> None:
         self.add_users_to_requiered_system_groups()
-        self.create_custom_authselect_profile()
-        self.apply_custom_authselect_profile()
+        custom_profile_created = self.create_custom_authselect_profile()
+        if custom_profile_created:
+            self.apply_custom_authselect_profile()
+        else:
+            # Fallback to default profile with manual edits
+            self.apply_default_profile_with_edits()
 
 
     def add_users_to_requiered_system_groups(self) -> None:
@@ -80,14 +84,16 @@ class PamConfigurator(ConflictChecker):
 
         userinfo_logger.info('Creating custom authselect profile')
         
-        # Create custom profile directory
-        os.makedirs('/etc/authselect/custom/ucs-join', exist_ok=True)
-        
-        # Copy base sssd profile files
-        subprocess.check_output(
-            ['cp', '-r', '/usr/share/authselect/default/sssd/*', '/etc/authselect/custom/ucs-join/'],
-            stderr=subprocess.STDOUT
-        )
+        try:
+            # Use authselect create-profile to create the custom profile with mkhomedir
+            subprocess.check_output(
+                ['authselect', 'create-profile', 'ucs-join', '-b', 'sssd', '--with-mkhomedir'],
+                stderr=subprocess.STDOUT
+            )
+        except subprocess.CalledProcessError as e:
+            # If create-profile fails, skip custom profile and use default with manual edits
+            userinfo_logger.info('authselect create-profile failed, will use default profile with manual edits')
+            return False
         
         # Add pam_group.so to system-auth
         system_auth_path = '/etc/authselect/custom/ucs-join/system-auth'
@@ -99,20 +105,46 @@ class PamConfigurator(ConflictChecker):
                     f.write('auth        required      pam_group.so use_first_pass\n')
                 userinfo_logger.info('Added pam_group.so to custom profile system-auth')
         
-        # Create profile requirements file
-        with open('/etc/authselect/custom/ucs-join/REQUIREMENTS', 'w') as f:
-            f.write('sssd\n')
-        
         userinfo_logger.info('Custom authselect profile created')
+        return True
 
     @execute_as_root
     def apply_custom_authselect_profile(self) -> None:
         userinfo_logger.info('Applying custom authselect profile')
         
+        try:
+            subprocess.check_output(
+                ['authselect', 'select', 'custom/ucs-join', '--force'],
+                stderr=subprocess.STDOUT
+            )
+        except subprocess.CalledProcessError as e:
+            # Try with with-mkhomedir option
+            userinfo_logger.info('Standard select failed, trying with with-mkhomedir')
+            subprocess.check_output(
+                ['authselect', 'select', 'custom/ucs-join', 'with-mkhomedir', '--force'],
+                stderr=subprocess.STDOUT
+            )
+        
+        userinfo_logger.info('Custom authselect profile applied')
+
+    @execute_as_root
+    def apply_default_profile_with_edits(self) -> None:
+        userinfo_logger.info('Applying default sssd profile with manual edits')
+        
         subprocess.check_output(
-            ['authselect', 'select', 'custom/ucs-join', '--force'],
+            ['authselect', 'select', 'sssd', 'with-mkhomedir', '--force'],
             stderr=subprocess.STDOUT
         )
         
-        userinfo_logger.info('Custom authselect profile applied')
+        # Add pam_group.so to system-auth
+        system_auth_path = '/etc/pam.d/system-auth'
+        if os.path.isfile(system_auth_path):
+            with open(system_auth_path, 'r') as f:
+                content = f.read()
+            if 'pam_group.so' not in content:
+                with open(system_auth_path, 'a') as f:
+                    f.write('auth        required      pam_group.so use_first_pass\n')
+                userinfo_logger.info('Added pam_group.so to system-auth')
+        
+        userinfo_logger.info('Default profile with manual edits applied')
 

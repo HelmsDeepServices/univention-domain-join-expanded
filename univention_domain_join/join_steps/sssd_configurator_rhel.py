@@ -92,10 +92,27 @@ class SssdConfigurator(ConflictChecker):
     def configure_sssd(self) -> None:
         userinfo_logger.info('Configuring auth config profile for sssd')
 
-        subprocess.check_output(
-            ['authselect', 'select', 'custom/ucs-join', '--force'],
-            stderr=subprocess.STDOUT
-        )
+        # Try custom profile first, fall back to default if it doesn't exist
+        if os.path.isdir('/etc/authselect/custom/ucs-join'):
+            try:
+                subprocess.check_output(
+                    ['authselect', 'select', 'custom/ucs-join', '--force'],
+                    stderr=subprocess.STDOUT
+                )
+                userinfo_logger.info('Using custom authselect profile')
+            except subprocess.CalledProcessError:
+                # Fallback to default
+                subprocess.check_output(
+                    ['authselect', 'select', 'sssd', 'with-mkhomedir', '--force'],
+                    stderr=subprocess.STDOUT
+                )
+                userinfo_logger.info('Using default sssd authselect profile')
+        else:
+            subprocess.check_output(
+                ['authselect', 'select', 'sssd', 'with-mkhomedir', '--force'],
+                stderr=subprocess.STDOUT
+            )
+            userinfo_logger.info('Using default sssd authselect profile')
         
         # Enable and start oddjobd for home directory creation via dbus
         userinfo_logger.info('Enabling and starting oddjobd service')
