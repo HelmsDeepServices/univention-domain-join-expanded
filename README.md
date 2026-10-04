@@ -50,10 +50,10 @@ but can be skipped using the `--skip-login-manager` parameter of the
 
 # Limitations:
 
-- Not tested with a desktop environment, only tested with `univention-domain-join-cli` and the `--skip-login-manager` flag.
+- The `gui.py` has not been tested. Currently only tested with `cli.py` and the `--skip-login-manager` flag.
 - No apt or yum repository exists for these modifications (yet). Execution of these scripts is accomplished using a Python venv, please see below for instructions. 
 - Updating NTP settings on Rocky Linux is not yet implemented properly. Need to switch to Chrony in the future, for now this can be done manually.
-- Support for any Desktop Environments outside of the versions supported in the origonal/official Univention Domain Join application is not yet implemented. 
+- Support for any Desktop Environments outside of the versions supported in the origonal/official Univention Domain Join application is not yet implemented. This would include newer Unity/GNOME versions found in OS versions newer than Ubuntu 24.04. However, if using a DE that uses SDDM (Such as KDE) you probably do not need to make any changes to it's config, as the SSSD and PAM configuration steps of these scripts may be enough to make it functional. Simply use `--skip-login-manager` in these cases. 
 
 # Usage Reccomendations
 
@@ -79,6 +79,11 @@ options:
 
 - When using the CLI on a machine with no supported desktop environment installed, use `--skip-login-manager`
 - When using the CLI inside a Proxmox LXC container, use `--no-ntp-update` since NTP is handled on the host OS. Ensure that your Proxmox host is configured to use the NTP server of your Univention Corperate Server instance. 
+- When using an unsupported Desktop Environment such as:
+  - Unity/GNOME versions found in OS newer than Ubuntu 24.04
+  - Any other Desktop Environments such as KDE      
+  
+  Use `--skip-login-manager`. In some cases, such as KDE and SDDM, you may not need to perform any additional changes to make your GUI login manager work. The "login manager" updates that are part of these scripts are only intended/nessisary for Unity/GNOME. 
 
 # Download and Installation
 
