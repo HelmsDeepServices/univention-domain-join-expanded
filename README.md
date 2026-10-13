@@ -18,6 +18,7 @@ It will perform the following steps for you:
 - (Optional) Configure sync of SSH keys from the LDAP directory if the univention-ssh-key-sync Cool Solution is set up on your Domain Controller. 
   - https://help.univention.com/t/cool-solution-sync-ssh-keys-via-ldap/21315
   - https://github.com/univention/cool-solutions/tree/ucs-5.2/master/univention-ssh-key-sync
+  
 Univention Domain Join Extended supports the following Linux distributions:
 
 - `ubuntu2604`
