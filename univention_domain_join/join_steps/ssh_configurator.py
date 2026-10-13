@@ -22,9 +22,12 @@ class ConflictChecker(object):
     def sshd_config_already_configured(self) -> bool:
         if os.path.isfile('/etc/ssh/sshd_config'):
             with open('/etc/ssh/sshd_config', 'r') as f:
-                content = f.read()
-                if 'AuthorizedKeysCommand' in content:
-                    return True
+                for line in f:
+                    # Check if line starts with AuthorizedKeysCommand (ignoring leading whitespace)
+                    # and is not commented out
+                    stripped_line = line.strip()
+                    if stripped_line.startswith('AuthorizedKeysCommand'):
+                        return True
         return False
 
 
@@ -74,8 +77,8 @@ class SshConfigurator(ConflictChecker):
         with open(sshd_config_path, 'r') as f:
             lines = f.readlines()
 
-        # Check if the configuration already exists
-        config_exists = any('AuthorizedKeysCommand' in line for line in lines)
+        # Check if the configuration already exists (ignoring commented lines)
+        config_exists = any(line.strip().startswith('AuthorizedKeysCommand') for line in lines)
 
         if config_exists:
             userinfo_logger.info('AuthorizedKeysCommand already configured in sshd_config')
