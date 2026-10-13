@@ -45,8 +45,6 @@ LDAP_URI=$(grep -E '^ldap_uri ' "$SSSD_CONF" | sed 's/ldap_uri = //' | tr -d '[:
 LDAP_BASE=$(grep -E '^ldap_search_base ' "$SSSD_CONF" | sed 's/ldap_search_base = //' | tr -d '[:space:]')
 LDAP_BIND_DN=$(grep -E '^ldap_default_bind_dn ' "$SSSD_CONF" | sed 's/ldap_default_bind_dn = //' | tr -d '[:space:]')
 LDAP_BIND_PW=$(grep -E '^ldap_default_authtok ' "$SSSD_CONF" | sed 's/ldap_default_authtok = //' | tr -d '[:space:]')
-LDAP_TLS_CACERT=$(grep -E '^ldap_tls_cacert ' "$SSSD_CONF" | sed 's/ldap_tls_cacert = //' | tr -d '[:space:]')
-LDAP_TLS_REQCERT=$(grep -E '^ldap_tls_reqcert ' "$SSSD_CONF" | sed 's/ldap_tls_reqcert = //' | tr -d '[:space:]')
 
 if [ -z "$LDAP_URI" ] || [ -z "$LDAP_BASE" ]; then
     echo "Error: Could not read LDAP configuration from $SSSD_CONF" >&2
@@ -62,30 +60,12 @@ if [ -z "$USERNAME" ]; then
 fi
 
 # Perform LDAP search for SSH public keys
-if [ -n "$LDAP_BIND_DN" ] && [ -n "$LDAP_BIND_PW" ]; then
-    # Use authenticated bind
-    # Try without TLS first (for UCS port 7389 which may not require TLS for machine accounts)
-    RESULT=$(ldapsearch -x -H "$LDAP_URI" -b "$LDAP_BASE" \
-        -D "$LDAP_BIND_DN" -w "$LDAP_BIND_PW" \
-        -LLL "(&(objectClass=posixAccount)(uid=$USERNAME))" sshPublicKey \
-        2>/dev/null)
+# Use authenticated bind with TLS
+RESULT=$(ldapsearch -x -H "$LDAP_URI" -b "$LDAP_BASE" \
+    -D "$LDAP_BIND_DN" -w "$LDAP_BIND_PW" \
+    -ZZ -o nettimeout=5 \
+    -LLL "(&(objectClass=posixAccount)(uid=$USERNAME))" sshPublicKey \
+    2>/dev/null)
 
-    # If that fails and we have TLS cert, try with TLS
-    if [ -z "$RESULT" ] && [ -n "$LDAP_TLS_CACERT" ] && [ -f "$LDAP_TLS_CACERT" ]; then
-        RESULT=$(ldapsearch -x -H "$LDAP_URI" -b "$LDAP_BASE" \
-            -D "$LDAP_BIND_DN" -w "$LDAP_BIND_PW" \
-            -ZZ -o nettimeout=5 \
-            -LLL "(&(objectClass=posixAccount)(uid=$USERNAME))" sshPublicKey \
-            2>/dev/null)
-    fi
-
-    # Extract SSH keys from the result - handle multiline keys properly
-    # Use perl to handle potential line folding in LDAP output
-    echo "$RESULT" | perl -00 -ne 'print "$1\n" while /sshPublicKey:\s*(.+?)(?=\n\S|\n\n|$)/gs'
-else
-    # Use anonymous bind (if allowed)
-    RESULT=$(ldapsearch -x -H "$LDAP_URI" -b "$LDAP_BASE" \
-        -LLL "(&(objectClass=posixAccount)(uid=$USERNAME))" sshPublicKey \
-        2>/dev/null)
-    echo "$RESULT" | perl -00 -ne 'print "$1\n" while /sshPublicKey:\s*(.+?)(?=\n\S|\n\n|$)/gs'
-fi
+# Extract SSH keys from the result - handle multiline keys properly
+echo "$RESULT" | perl -00 -ne 'print "$1\n" while /sshPublicKey:\s*(.+?)(?=\n\S|\n\n|$)/gs'
