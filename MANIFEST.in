@@ -1,0 +1,1 @@
+include univention_domain_join/utils/ldap-keys.sh
