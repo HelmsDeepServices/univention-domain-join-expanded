@@ -63,9 +63,11 @@ fi
 # Use authenticated bind with TLS
 RESULT=$(ldapsearch -x -H "$LDAP_URI" -b "$LDAP_BASE" \
     -D "$LDAP_BIND_DN" -w "$LDAP_BIND_PW" \
-    -ZZ -o nettimeout=5 \
+    -ZZ -o nettimeout=5 -o ldif-wrap=no \
     -LLL "(&(objectClass=posixAccount)(uid=$USERNAME))" sshPublicKey \
     2>/dev/null)
 
 # Extract SSH keys from the result - handle multiline keys properly
-echo "$RESULT" | perl -00 -ne 'print "$1\n" while /sshPublicKey:\s*(.+?)(?=\n\S|\n\n|$)/gs'
+# Remove line folding (leading spaces on continuation lines) and extract the key
+RESULT=$(printf '%s\n' "$RESULT" | sed -n 's/^sshPublicKey: //p' | awk '{if (NR==1) {type=$1; sub(/^[^[:space:]]+[[:space:]]*/, ""); key=$0} else {key=key $0}} END {if (type!="") print type, key}')
+echo "$RESULT"
