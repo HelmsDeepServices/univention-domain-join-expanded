@@ -14,7 +14,10 @@ It will perform the following steps for you:
 - Configure the login manager, if necessary
 - Configure PAM
 - Configure SSSD
-
+- (Optional) Configure NTP
+- (Optional) Configure sync of SSH keys from the LDAP directory if the univention-ssh-key-sync Cool Solution is set up on your Domain Controller. 
+  - https://help.univention.com/t/cool-solution-sync-ssh-keys-via-ldap/21315
+  - https://github.com/univention/cool-solutions/tree/ucs-5.2/master/univention-ssh-key-sync
 Univention Domain Join Extended supports the following Linux distributions:
 
 - `ubuntu2604`
@@ -40,10 +43,9 @@ Univention Domain Join Extended supports the following Linux distributions:
   - Rocky Linux 9.8 („Blue Onyx“))
   - Rocky Linux 9.8 LXC (Proxmox)
 
-The actual source code for the different releases can be found in
-the corresponding git branches.
+Univention Domain Join Extended has been tested on UCS 5.2 domains. 
 
-Univention Domain Join supports the Gnome and Unity desktop environments. The
+Univention Domain Join Extended supports the Gnome and Unity desktop environments. The
 configuration of the login manager of other desktop environments may not work,
 but can be skipped using the `--skip-login-manager` parameter of the
 `univention-domain-join-cli` tool.
