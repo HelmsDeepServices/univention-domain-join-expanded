@@ -72,6 +72,7 @@ options:
   --password PASSWORD   Password for the domain administrator
   --password-file FILE  Path to a file, containing the password for the domain administrator
   --skip-login-manager  Do not configure the login manager
+  --config-ssh          Configure SSH to check SSH keys against LDAP directory (compatibility with cool-solutions/univention-ssh-key-sync)
   --domain DOMAIN       Domain name. Can be left out if the domain is configured for this system
   --dc-ip IP            IP address of the UCS domain controller to join to. Can be used if --domain does not work. If unsure, use the IP of the UCS Master
   --force-ucs-dns       Change the system's DNS settings and set the UCS DC as DNS nameserver (default is to use the standard network settings, but make
