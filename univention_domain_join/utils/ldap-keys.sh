@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# bash script to be used in `
+# bash script to be used in sshd AuthorizedKeysCommand
 
 # Copyright (C) 2023-2025 Univention GmbH
 #
@@ -28,7 +28,47 @@
 # License with the Debian GNU/Linux or Univention distribution in file
 # /usr/share/common-licenses/AGPL-3. If not, see <https://www.gnu.org/licenses/>.
 
-univention-ldapsearch -LLL \
-	'(&(objectClass=posixAccount)(uid='"$1"'))' \
-	'sshPublicKey' \
-	| sed -ne 's/sshPublicKey: //p'
+# This script retrieves SSH public keys from LDAP for a given username
+# Usage: ldap-keys.sh <username>
+# It reads LDAP connection parameters from /etc/sssd/sssd.conf
+
+# Read LDAP configuration from sssd.conf
+SSSD_CONF="/etc/sssd/sssd.conf"
+
+if [ ! -f "$SSSD_CONF" ]; then
+    echo "Error: $SSSD_CONF not found" >&2
+    exit 1
+fi
+
+# Extract LDAP parameters from sssd.conf
+LDAP_URI=$(grep -E '^ldap_uri' "$SSSD_CONF" | sed 's/ldap_uri = //')
+LDAP_BASE=$(grep -E '^ldap_search_base' "$SSSD_CONF" | sed 's/ldap_search_base = //')
+LDAP_BIND_DN=$(grep -E '^ldap_default_bind_dn' "$SSSD_CONF" | sed 's/ldap_default_bind_dn = //')
+LDAP_BIND_PW=$(grep -E '^ldap_default_authtok' "$SSSD_CONF" | sed 's/ldap_default_authtok = //')
+
+if [ -z "$LDAP_URI" ] || [ -z "$LDAP_BASE" ]; then
+    echo "Error: Could not read LDAP configuration from $SSSD_CONF" >&2
+    exit 1
+fi
+
+# Username to search for
+USERNAME="$1"
+
+if [ -z "$USERNAME" ]; then
+    echo "Error: Username not provided" >&2
+    exit 1
+fi
+
+# Perform LDAP search for SSH public keys
+if [ -n "$LDAP_BIND_DN" ] && [ -n "$LDAP_BIND_PW" ]; then
+    # Use authenticated bind
+    ldapsearch -x -H "$LDAP_URI" -b "$LDAP_BASE" \
+        -D "$LDAP_BIND_DN" -w "$LDAP_BIND_PW" \
+        -LLL "(&(objectClass=posixAccount)(uid=$USERNAME))" sshPublicKey \
+        | sed -ne 's/sshPublicKey: //p'
+else
+    # Use anonymous bind (if allowed)
+    ldapsearch -x -H "$LDAP_URI" -b "$LDAP_BASE" \
+        -LLL "(&(objectClass=posixAccount)(uid=$USERNAME))" sshPublicKey \
+        | sed -ne 's/sshPublicKey: //p'
+fi

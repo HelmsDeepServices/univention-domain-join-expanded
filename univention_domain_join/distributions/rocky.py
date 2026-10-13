@@ -13,6 +13,7 @@ from univention_domain_join.join_steps.kerberos_configurator import KerberosConf
 from univention_domain_join.join_steps.ldap_configurator_rhel import LdapConfigurator
 from univention_domain_join.join_steps.login_manager_configurator_rhel import LoginManagerConfigurator
 from univention_domain_join.join_steps.pam_configurator_rhel import PamConfigurator
+from univention_domain_join.join_steps.ssh_configurator_rhel import SshConfigurator
 from univention_domain_join.join_steps.sssd_configurator_rhel import SssdConfigurator
 from univention_domain_join.utils import ldap
 from univention_domain_join.utils.general import execute_as_root, name_is_resolvable
@@ -29,11 +30,12 @@ class DcResolveException(Exception):
 
 
 class Joiner(AbstractJoiner):
-    def __init__(self, ucr_variables: Dict[str, str], admin_username: str, admin_pw: str, dc_ip: str, skip_login_manager: bool, force_ucs_dns: bool, no_ntp_update: bool) -> None:
+    def __init__(self, ucr_variables: Dict[str, str], admin_username: str, admin_pw: str, dc_ip: str, skip_login_manager: bool, config_ssh: bool, force_ucs_dns: bool, no_ntp_update: bool) -> None:
         self.admin_username = admin_username
         self.admin_pw = admin_pw
         self.dc_ip = dc_ip
         self.skip_login_manager = skip_login_manager
+        self.config_ssh = config_ssh
         self.force_ucs_dns = force_ucs_dns
         self.no_ntp_update = no_ntp_update
         self.domain = ucr_variables['domainname']
@@ -64,6 +66,8 @@ class Joiner(AbstractJoiner):
         PamConfigurator().backup(backup_dir)
         if not self.skip_login_manager:
             LoginManagerConfigurator().backup(backup_dir)
+        if self.config_ssh:
+            SshConfigurator().backup(backup_dir)
         KerberosConfigurator().backup(backup_dir)
         userinfo_logger.info('Created a backup of all configuration files, that will be modified at \'%s\'.' % backup_dir)
 
@@ -91,6 +95,8 @@ class Joiner(AbstractJoiner):
             PamConfigurator().setup_pam()
             if not self.skip_login_manager:
                 LoginManagerConfigurator().enable_login_with_foreign_usernames()
+            if self.config_ssh:
+                SshConfigurator().setup_ssh()
             KerberosConfigurator().configure_kerberos(self.kerberos_realm, self.ldap_master, self.ldap_server_name, is_samba_dc, self.dc_ip, self.no_ntp_update)
             # TODO: Stop avahi service to prevent problems with sssd?
             userinfo_logger.info('The domain join was successful.')
