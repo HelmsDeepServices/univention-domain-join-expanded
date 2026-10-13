@@ -7,6 +7,8 @@ import os
 import subprocess
 from shutil import copyfile
 
+import pkg_resources
+
 from univention_domain_join.utils.general import execute_as_root
 
 userinfo_logger = logging.getLogger('userinfo')
@@ -57,11 +59,24 @@ class SshConfigurator(ConflictChecker):
         userinfo_logger.info('Installing ldap-keys.sh script')
 
         # Copy the script to /usr/local/bin
-        script_source = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            'utils',
-            'ldap-keys.sh'
-        )
+        # Use pkg_resources to find the file in the installed package
+        try:
+            script_source = pkg_resources.resource_filename(
+                'univention_domain_join',
+                'utils/ldap-keys.sh'
+            )
+        except Exception:
+            # Fallback to relative path if pkg_resources fails (e.g., when running from source)
+            script_source = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                'utils',
+                'ldap-keys.sh'
+            )
+
+        if not os.path.exists(script_source):
+            userinfo_logger.error(f'Could not find ldap-keys.sh at {script_source}')
+            raise FileNotFoundError(f'ldap-keys.sh not found at {script_source}')
+
         script_dest = '/usr/local/bin/ldap-keys.sh'
 
         copyfile(script_source, script_dest)
