@@ -35,20 +35,35 @@ class SssdConfigurator(ConflictChecker):
             )
 
     @execute_as_root
-    def setup_sssd(self, dc_ip: str, ldap_master: str, ldap_server_name: str, admin_username: str, admin_pw: str, ldap_base: str, kerberos_realm: str, admin_dn: str, is_samba_dc: bool) -> None:
+    def backup_nsswitch(self, backup_dir: str) -> None:
+        if os.path.isfile('/etc/nsswitch.conf'):
+            os.makedirs(os.path.join(backup_dir, 'etc'), exist_ok=True)
+            copyfile(
+                '/etc/nsswitch.conf',
+                os.path.join(backup_dir, 'etc/nsswitch.conf')
+            )
+
+    @execute_as_root
+    def setup_sssd(self, dc_ip: str, ldap_master: str, ldap_server_name: str, admin_username: str, admin_pw: str, ldap_base: str, kerberos_realm: str, admin_dn: str, is_samba_dc: bool, config_sudo: bool) -> None:
         self.ldap_password = open('/etc/machine.secret').read().strip()
         RootCertificateProvider().provide_ucs_root_certififcate(dc_ip)
-        self.write_sssd_conf(dc_ip, ldap_master, ldap_server_name, admin_username, admin_pw, ldap_base, kerberos_realm, admin_dn, is_samba_dc)
+        self.write_sssd_conf(dc_ip, ldap_master, ldap_server_name, admin_username, admin_pw, ldap_base, kerberos_realm, admin_dn, is_samba_dc, config_sudo)
         self.configure_sssd()
         self.restart_sssd()
 
     @execute_as_root
-    def write_sssd_conf(self, dc_ip: str, ldap_master: str, ldap_server_name: str, admin_username: str, admin_pw: str, ldap_base: str, kerberos_realm: str, admin_dn: str, is_samba_dc: bool) -> None:
+    def write_sssd_conf(self, dc_ip: str, ldap_master: str, ldap_server_name: str, admin_username: str, admin_pw: str, ldap_base: str, kerberos_realm: str, admin_dn: str, is_samba_dc: bool, config_sudo: bool) -> None:
         userinfo_logger.info('Writing /etc/sssd/sssd.conf ')
         if is_samba_dc:
             kpasswd_server = ldap_server_name
         else:
             kpasswd_server = ldap_master
+        
+        # Build sudo configuration if enabled
+        sudo_config = ''
+        if config_sudo:
+            sudo_config = 'ldap_sudo_search_base = cn=sudo-ldap,cn=univention,%(ldap_base)s\n'
+        
         sssd_conf = \
             '[sssd]\n' \
             'config_file_version = 2\n' \
@@ -60,6 +75,8 @@ class SssdConfigurator(ConflictChecker):
             '\n' \
             '[pam]\n' \
             'mkhomedir = True\n' \
+            '\n' \
+            '[sudo]\n' \
             '\n' \
             '[domain/%(kerberos_realm)s]\n' \
             'auth_provider = krb5\n' \
@@ -76,6 +93,7 @@ class SssdConfigurator(ConflictChecker):
             'ldap_default_bind_dn = %(machines_ldap_dn)s\n' \
             'ldap_default_authtok_type = password\n' \
             'ldap_default_authtok = %(ldap_password)s\n' \
+            '%(sudo_config)s' \
             % {
                 'kerberos_realm': kerberos_realm,
                 'kpasswd_server': kpasswd_server,
@@ -83,6 +101,7 @@ class SssdConfigurator(ConflictChecker):
                 'ldap_server_name': ldap_server_name,
                 'ldap_password': self.ldap_password,
                 'machines_ldap_dn': get_machines_udm(dc_ip, admin_username, admin_pw, admin_dn)[1],
+                'sudo_config': sudo_config,
             }
         with open('/etc/sssd/sssd.conf', 'w') as conf_file:
             conf_file.write(sssd_conf)
@@ -129,3 +148,37 @@ class SssdConfigurator(ConflictChecker):
             ['systemctl', 'restart', 'sssd'],
             stderr=subprocess.STDOUT
         )
+
+    @execute_as_root
+    def configure_nsswitch_for_sudo(self) -> None:
+        userinfo_logger.info('Configuring nsswitch.conf for sudoers')
+
+        nsswitch_path = '/etc/nsswitch.conf'
+
+        with open(nsswitch_path, 'r') as f:
+            lines = f.readlines()
+
+        # Check if sudoers line already contains sss
+        sudoers_configured = False
+        new_lines = []
+        for line in lines:
+            if line.strip().startswith('sudoers:'):
+                if 'sss' in line:
+                    userinfo_logger.info('sudoers already configured to use sss in nsswitch.conf')
+                    sudoers_configured = True
+                else:
+                    # Add sss to the line
+                    new_line = line.rstrip() + ' sss\n'
+                    new_lines.append(new_line)
+                    sudoers_configured = True
+            else:
+                new_lines.append(line)
+
+        if not sudoers_configured:
+            # Add sudoers line at the end
+            new_lines.append('sudoers: files sss\n')
+
+        with open(nsswitch_path, 'w') as f:
+            f.writelines(new_lines)
+
+        userinfo_logger.info('Configured nsswitch.conf for sudoers')

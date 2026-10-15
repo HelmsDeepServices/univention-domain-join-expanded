@@ -30,12 +30,13 @@ class DcResolveException(Exception):
 
 
 class Joiner(AbstractJoiner):
-    def __init__(self, ucr_variables: Dict[str, str], admin_username: str, admin_pw: str, dc_ip: str, skip_login_manager: bool, config_ssh: bool, force_ucs_dns: bool, no_ntp_update: bool) -> None:
+    def __init__(self, ucr_variables: Dict[str, str], admin_username: str, admin_pw: str, dc_ip: str, skip_login_manager: bool, config_ssh: bool, config_sudo: bool, force_ucs_dns: bool, no_ntp_update: bool) -> None:
         self.admin_username = admin_username
         self.admin_pw = admin_pw
         self.dc_ip = dc_ip
         self.skip_login_manager = skip_login_manager
         self.config_ssh = config_ssh
+        self.config_sudo = config_sudo
         self.force_ucs_dns = force_ucs_dns
         self.no_ntp_update = no_ntp_update
         self.domain = ucr_variables['domainname']
@@ -68,6 +69,8 @@ class Joiner(AbstractJoiner):
             LoginManagerConfigurator().backup(backup_dir)
         if self.config_ssh:
             SshConfigurator().backup(backup_dir)
+        if self.config_sudo:
+            SssdConfigurator().backup_nsswitch(backup_dir)
         KerberosConfigurator().backup(backup_dir)
         userinfo_logger.info('Created a backup of all configuration files, that will be modified at \'%s\'.' % backup_dir)
 
@@ -91,12 +94,14 @@ class Joiner(AbstractJoiner):
             admin_dn = LdapConfigurator().get_admin_dn(self.dc_ip, self.admin_username, self.admin_pw, self.ldap_base)
             is_samba_dc = ldap.is_samba_dc(self.admin_username, self.admin_pw, self.dc_ip, admin_dn)
             LdapConfigurator().configure_ldap(self.dc_ip, self.ldap_server_name, self.admin_username, self.admin_pw, self.ldap_base, admin_dn)
-            SssdConfigurator().setup_sssd(self.dc_ip, self.ldap_master, self.ldap_server_name, self.admin_username, self.admin_pw, self.ldap_base, self.kerberos_realm, admin_dn, is_samba_dc)
+            SssdConfigurator().setup_sssd(self.dc_ip, self.ldap_master, self.ldap_server_name, self.admin_username, self.admin_pw, self.ldap_base, self.kerberos_realm, admin_dn, is_samba_dc, self.config_sudo)
             PamConfigurator().setup_pam()
             if not self.skip_login_manager:
                 LoginManagerConfigurator().enable_login_with_foreign_usernames()
             if self.config_ssh:
                 SshConfigurator().setup_ssh()
+            if self.config_sudo:
+                SssdConfigurator().configure_nsswitch_for_sudo()
             KerberosConfigurator().configure_kerberos(self.kerberos_realm, self.ldap_master, self.ldap_server_name, is_samba_dc, self.dc_ip, self.no_ntp_update)
             # TODO: Stop avahi service to prevent problems with sssd?
             userinfo_logger.info('The domain join was successful.')
