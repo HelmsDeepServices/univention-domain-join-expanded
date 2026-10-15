@@ -1,0 +1,48 @@
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [sss_krb5_check_options] (0x0100): ccache is of type FILE
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [parse_krb5_map_user] (0x0100): krb5_map_user is empty!
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [be_fo_set_srv_lookup_plugin] (0x0400): Trying to set SRV lookup plugin to DNS
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [fo_set_srv_lookup_plugin] (0x0080): SRV lookup plugin is already set
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [be_fo_set_srv_lookup_plugin] (0x0080): Unable to set SRV lookup plugin, another plugin may be already in place
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [dp_target_run_constructor] (0x0400): Executing target [auth] constructor
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [dp_target_init] (0x0400): Initializing target [access] with module [permit]
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [dp_target_init] (0x0400): Initializing target [chpass] with module [krb5]
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [dp_load_module] (0x0400): Module [krb5] is already loaded.
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [dp_target_run_constructor] (0x0400): Executing target [chpass] constructor
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [dp_target_init] (0x0400): Initializing target [sudo] with module [ldap]
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [dp_load_module] (0x0400): Module [ldap] is already loaded.
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [dp_target_run_constructor] (0x0400): Executing target [sudo] constructor
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [sssm_ldap_sudo_init] (0x2000): Initializing LDAP sudo handler
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [sdap_sudo_init] (0x2000): Initializing sudo LDAP back end
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [sdap_create_search_base] (0x0020): Invalid base DN [cn=sudo-ldap,cn=univention,%(ldap_base)s]
+********************** BACKTRACE DUMP ENDS HERE *********************************
+
+(2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [common_parse_search_base] (0x0040): Cannot create new sdap search base
+(2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [ldap_get_sudo_options] (0x0040): Could not parse SUDO search base
+********************** PREVIOUS MESSAGE WAS TRIGGERED BY THE FOLLOWING BACKTRACE:
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [common_parse_search_base] (0x0040): Cannot create new sdap search base
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [ldap_get_sudo_options] (0x0040): Could not parse SUDO search base
+********************** BACKTRACE DUMP ENDS HERE *********************************
+
+(2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [sdap_sudo_init] (0x0040): Cannot get SUDO options [22]: Invalid argument
+(2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [dp_target_run_constructor] (0x0010): Target [sudo] constructor failed [22]: Invalid argument
+********************** PREVIOUS MESSAGE WAS TRIGGERED BY THE FOLLOWING BACKTRACE:
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [sdap_sudo_init] (0x0040): Cannot get SUDO options [22]: Invalid argument
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [dp_target_run_constructor] (0x0010): Target [sudo] constructor failed [22]: Invalid argument
+********************** BACKTRACE DUMP ENDS HERE *********************************
+
+(2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [dp_load_targets] (0x0020): Unable to load target [sudo] [22]: Invalid argument.
+(2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [dp_init] (0x0020): Unable to initialize DP targets [1432158209]: Internal Error
+********************** PREVIOUS MESSAGE WAS TRIGGERED BY THE FOLLOWING BACKTRACE:
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [dp_load_targets] (0x0020): Unable to load target [sudo] [22]: Invalid argument.
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [dp_init] (0x0020): Unable to initialize DP targets [1432158209]: Internal Error
+********************** BACKTRACE DUMP ENDS HERE *********************************
+
+(2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [be_process_init] (0x0010): Unable to setup data provider [1432158209]: Internal Error
+********************** PREVIOUS MESSAGE WAS TRIGGERED BY THE FOLLOWING BACKTRACE:
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [dp_terminate_active_requests] (0x0400): Terminating active data provider requests
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [be_ptask_destructor] (0x0400): Terminating periodic task [Enumeration [id] of AD.HELMSDEEPSERVICES.COM]
+   *  (2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [be_process_init] (0x0010): Unable to setup data provider [1432158209]: Internal Error
+********************** BACKTRACE DUMP ENDS HERE *********************************
+
+(2026-10-14 23:39:30): [be[AD.HELMSDEEPSERVICES.COM]] [main] (0x0010): Could not initialize backend [1432158209]
+root@hds-vm-linux:/var/log/sssd# cat sssd_AD.HELMSDEEPSERVICES.COM.log

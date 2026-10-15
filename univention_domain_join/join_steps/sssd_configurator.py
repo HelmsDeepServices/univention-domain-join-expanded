@@ -62,7 +62,7 @@ class SssdConfigurator(ConflictChecker):
         # Build sudo configuration if enabled
         sudo_config = ''
         if config_sudo:
-            sudo_config = 'ldap_sudo_search_base = cn=sudo-ldap,cn=univention,%(ldap_base)s\n'
+            sudo_config = 'ldap_sudo_search_base = cn=sudo-ldap,cn=univention,%s\n' % (ldap_base,)
         
         sssd_conf = \
             '[sssd]\n' \
