@@ -44,15 +44,15 @@ class SssdConfigurator(ConflictChecker):
             )
 
     @execute_as_root
-    def setup_sssd(self, dc_ip: str, ldap_master: str, ldap_server_name: str, admin_username: str, admin_pw: str, ldap_base: str, kerberos_realm: str, admin_dn: str, is_samba_dc: bool, config_sudo: bool) -> None:
+    def setup_sssd(self, dc_ip: str, ldap_master: str, ldap_server_name: str, admin_username: str, admin_pw: str, ldap_base: str, kerberos_realm: str, admin_dn: str, is_samba_dc: bool, config_sudo: bool, login_filter: str) -> None:
         self.ldap_password = open('/etc/machine.secret').read().strip()
         RootCertificateProvider().provide_ucs_root_certififcate(dc_ip)
-        self.write_sssd_conf(dc_ip, ldap_master, ldap_server_name, admin_username, admin_pw, ldap_base, kerberos_realm, admin_dn, is_samba_dc, config_sudo)
+        self.write_sssd_conf(dc_ip, ldap_master, ldap_server_name, admin_username, admin_pw, ldap_base, kerberos_realm, admin_dn, is_samba_dc, config_sudo, login_filter)
         self.configure_sssd()
         self.restart_sssd()
 
     @execute_as_root
-    def write_sssd_conf(self, dc_ip: str, ldap_master: str, ldap_server_name: str, admin_username: str, admin_pw: str, ldap_base: str, kerberos_realm: str, admin_dn: str, is_samba_dc: bool, config_sudo: bool) -> None:
+    def write_sssd_conf(self, dc_ip: str, ldap_master: str, ldap_server_name: str, admin_username: str, admin_pw: str, ldap_base: str, kerberos_realm: str, admin_dn: str, is_samba_dc: bool, config_sudo: bool, login_filter: str) -> None:
         userinfo_logger.info('Writing /etc/sssd/sssd.conf ')
         if is_samba_dc:
             kpasswd_server = ldap_server_name
@@ -64,6 +64,11 @@ class SssdConfigurator(ConflictChecker):
         if config_sudo:
             sudo_config = 'ldap_sudo_search_base = cn=sudo-ldap,cn=univention,%s\n' % (ldap_base,)
             sudo_config += 'ldap_sudo_full_refresh_interval = 180\n'
+        
+        # Build access filter configuration if provided
+        access_config = ''
+        if login_filter:
+            access_config = 'access_provider = ldap\nldap_access_filter = %s\n' % (login_filter,)
         
         sssd_conf = \
             '[sssd]\n' \
@@ -96,7 +101,7 @@ class SssdConfigurator(ConflictChecker):
             'ldap_default_bind_dn = %(machines_ldap_dn)s\n' \
             'ldap_default_authtok_type = password\n' \
             'ldap_default_authtok = %(ldap_password)s\n' \
-            '%(sudo_config)s' \
+            '%(sudo_config)s%(access_config)s' \
             % {
                 'kerberos_realm': kerberos_realm,
                 'kpasswd_server': kpasswd_server,
@@ -105,6 +110,7 @@ class SssdConfigurator(ConflictChecker):
                 'ldap_password': self.ldap_password,
                 'machines_ldap_dn': get_machines_udm(dc_ip, admin_username, admin_pw, admin_dn)[1],
                 'sudo_config': sudo_config,
+                'access_config': access_config,
             }
         with open('/etc/sssd/sssd.conf', 'w') as conf_file:
             conf_file.write(sssd_conf)

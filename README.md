@@ -79,6 +79,7 @@ options:
   --skip-login-manager  Do not configure the login manager
   --config-ssh          Configure SSH to check SSH keys against LDAP directory (compatibility with ssh key attributes added with cool-solutions/univention-ssh-key-sync)
   --config-sudo         Configure sudo to use LDAP for sudoers rules (similar to cool-solutions/univention-sudo-ldap-host, compatibility with sudo-rules created with cool-solutions/univention-sudo-ldap-server)
+  --login-filter FILTER LDAP filter to restrict which users/groups can log in (e.g., "(memberOf=cn=allowed_group,cn=groups,dc=example,dc=com)"). Configures ldap_access_filter in SSSD.
   --domain DOMAIN       Domain name. Can be left out if the domain is configured for this system
   --dc-ip IP            IP address of the UCS domain controller to join to. Can be used if --domain does not work. If unsure, use the IP of the UCS Master
   --force-ucs-dns       Change the system's DNS settings and set the UCS DC as DNS nameserver (default is to use the standard network settings, but make
@@ -170,7 +171,36 @@ print("\tby * +0 break")
 
 # Notes for `--config-sudo`
 
-For best stability and compatability, I had to make sure the hostnames in my sudo-ldap rules on my Domain Controller were simply [hostname] and not the FQDN [hostname].[domain.com]. This could be something specific to my own environment, but in my case it was necessary.  
+For best stability and compatability, I had to make sure the hostnames in my sudo-ldap rules on my Domain Controller were simply [hostname] and not the FQDN [hostname].[domain.com]. This could be something specific to my own environment, but in my case it was necessary.
+
+# Notes for `--login-filter`
+
+The `--login-filter` option allows you to restrict which users or groups can log into the machine by configuring the `ldap_access_filter` in SSSD. This uses standard LDAP filter syntax and is evaluated against the user's LDAP entry during login.
+
+**Examples:**
+
+- Allow only members of a specific group:
+  ```bash
+  --login-filter "(memberOf=cn=allowed_group,cn=groups,dc=example,dc=com)"
+  ```
+
+- Allow only users with a specific attribute:
+  ```bash
+  --login-filter "(department=IT)"
+  ```
+
+- Allow members of multiple groups (using OR):
+  ```bash
+  --login-filter "(|(memberOf=cn=group1,cn=groups,dc=example,dc=com)(memberOf=cn=group2,cn=groups,dc=example,dc=com))"
+  ```
+
+**Important notes:**
+
+- The filter is applied locally on each machine via SSSD configuration
+- Group membership must be centrally managed in UCS LDAP via the UMC
+- This is not a UCS UCR policy - it's local SSSD configuration that references UCS LDAP groups
+- Without this option, all domain users who can authenticate will be able to log in
+- Test your filter carefully to avoid locking yourself out  
 
 # Doc
 

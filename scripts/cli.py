@@ -48,7 +48,7 @@ def set_up_logging(logfile: str) -> None:
     debugging_logger.addHandler(logfile_handler)
 
 
-def get_joiner_for_this_distribution(dc_ip: str, admin_username: str, admin_pw: str, skip_login_manager: bool, config_ssh: bool, config_sudo: bool, force_ucs_dns: bool, no_ntp_update: bool) -> AbstractJoiner:
+def get_joiner_for_this_distribution(dc_ip: str, admin_username: str, admin_pw: str, skip_login_manager: bool, config_ssh: bool, config_sudo: bool, login_filter: str, force_ucs_dns: bool, no_ntp_update: bool) -> AbstractJoiner:
     distribution = get_distribution()
     try:
         distribution_join_module = importlib.import_module('univention_domain_join.distributions.%s' % (distribution.lower(),))
@@ -58,7 +58,7 @@ def get_joiner_for_this_distribution(dc_ip: str, admin_username: str, admin_pw: 
             admin_pw = get_admin_password(admin_username)
         check_if_ssh_works_with_given_account(dc_ip, admin_username, admin_pw)
         ucr_variables = get_ucr_variables_from_dc(dc_ip, admin_username, admin_pw)
-        return distribution_join_module.Joiner(ucr_variables, admin_username, admin_pw, dc_ip, skip_login_manager, config_ssh, config_sudo, force_ucs_dns, no_ntp_update)
+        return distribution_join_module.Joiner(ucr_variables, admin_username, admin_pw, dc_ip, skip_login_manager, config_ssh, config_sudo, login_filter, force_ucs_dns, no_ntp_update)
     except ImportError:
         getLogger("userinfo").critical('The used distribution "%s" is not supported.' % (distribution,))
         exit(1)
@@ -112,6 +112,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--skip-login-manager', action='store_true', help='Do not configure the login manager')
     parser.add_argument('--config-ssh', action='store_true', help='Configure SSH to check SSH keys against LDAP directory (compatibility with ssh key attributes added with cool-solutions/univention-ssh-key-sync)')
     parser.add_argument('--config-sudo', action='store_true', help='Configure sudo to use LDAP for sudoers rules (similar to cool-solutions/univention-sudo-ldap-host, compatibility with sudo-rules created with cool-solutions/univention-sudo-ldap-server)')
+    parser.add_argument('--login-filter', help='LDAP filter to restrict which users/groups can log in (e.g., "(memberOf=cn=allowed_group,cn=groups,dc=example,dc=com)"). Configures ldap_access_filter in SSSD.')
     parser.add_argument('--domain', help='Domain name. Can be left out if the domain is configured for this system')
     parser.add_argument('--dc-ip', help='IP address of the UCS domain controller to join to. Can be used if --domain does not work. If unsure, use the IP of the UCS Master', metavar="IP")
     parser.add_argument('--force-ucs-dns', action='store_true', help='Change the system\'s DNS settings and set the UCS DC as DNS nameserver (default is to use the standard network settings, but make sure the your system can resolve the hostname of the UCS DC and the UCS master system)')
@@ -162,7 +163,7 @@ if __name__ == '__main__':
         else:
             password = None
 
-        distribution_joiner = get_joiner_for_this_distribution(args.dc_ip, args.username, password, args.skip_login_manager, args.config_ssh, args.config_sudo, args.force_ucs_dns, args.no_ntp_update)
+        distribution_joiner = get_joiner_for_this_distribution(args.dc_ip, args.username, password, args.skip_login_manager, args.config_ssh, args.config_sudo, args.login_filter, args.force_ucs_dns, args.no_ntp_update)
         distribution_joiner.check_if_join_is_possible_without_problems()
         distribution_joiner.create_backup_of_config_files()
         distribution_joiner.join_domain()
