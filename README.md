@@ -18,6 +18,11 @@ It will perform the following steps for you:
 - (Optional) Configure sync of SSH keys from the LDAP directory if the univention-ssh-key-sync Cool Solution is set up on your Domain Controller. 
   - https://help.univention.com/t/cool-solution-sync-ssh-keys-via-ldap/21315
   - https://github.com/univention/cool-solutions/tree/ucs-5.2/master/univention-ssh-key-sync
+- (Optional) Configure the sudo LDAP feature to search your LDAP directory for sudo-rules created by the univention-sudo-ldap-server Cool Solution on your Domain Controller. This replicates the functionality of univention-sudo-ldap-host on non-UCS linux systems. 
+  - https://help.univention.com/t/cool-solution-setup-sudo-with-ldap-on-multiserver-environments/21963
+  - https://github.com/univention/cool-solutions/tree/ucs-5.2/master/univention-sudo-ldap-host
+  - https://github.com/univention/cool-solutions/tree/ucs-5.2/master/univention-sudo-ldap-server
+  - http://www.sudo.ws/sudo/sudoers.ldap.man.html
   
 Univention Domain Join Extended supports the following Linux distributions:
 
@@ -55,7 +60,7 @@ but can be skipped using the `--skip-login-manager` parameter of the
 
 - The `gui.py` has not been tested. Currently only tested with `cli.py` and the `--skip-login-manager` flag.
 - No apt or yum repository exists for these modifications (yet). Execution of these scripts is accomplished using a Python venv, please see below for instructions. 
-- Updating NTP settings on Rocky Linux is not yet implemented properly. Need to switch to Chrony in the future, for now this can be done manually.
+- Updating NTP settings on Rocky Linux is not yet implemented properly. Need to switch to Chrony in the future, for now this can be done manually if needed.
 - Support for any Desktop Environments outside of the versions supported in the origonal/official Univention Domain Join application is not yet implemented. This would include newer Unity/GNOME versions found in OS versions newer than Ubuntu 24.04. However, if using a DE that uses SDDM (Such as KDE) you probably do not need to make any changes to it's config, as the SSSD and PAM configuration steps of these scripts may be enough to make it functional. Simply use `--skip-login-manager` in these cases. 
 
 # Usage Reccomendations
@@ -72,7 +77,8 @@ options:
   --password PASSWORD   Password for the domain administrator
   --password-file FILE  Path to a file, containing the password for the domain administrator
   --skip-login-manager  Do not configure the login manager
-  --config-ssh          Configure SSH to check SSH keys against LDAP directory (compatibility with cool-solutions/univention-ssh-key-sync)
+  --config-ssh          Configure SSH to check SSH keys against LDAP directory (compatibility with ssh key attributes added with cool-solutions/univention-ssh-key-sync)
+  --config-sudo         Configure sudo to use LDAP for sudoers rules (similar to cool-solutions/univention-sudo-ldap-host, compatibility with sudo-rules created with cool-solutions/univention-sudo-ldap-server)
   --domain DOMAIN       Domain name. Can be left out if the domain is configured for this system
   --dc-ip IP            IP address of the UCS domain controller to join to. Can be used if --domain does not work. If unsure, use the IP of the UCS Master
   --force-ucs-dns       Change the system's DNS settings and set the UCS DC as DNS nameserver (default is to use the standard network settings, but make
@@ -91,7 +97,7 @@ options:
 
 # Download and Installation
 
-You can run these Python scripts on your Debian machine directly without installing the official Univention Domain Join package, which is only available as an Ubuntu PPA. 
+Use these steps to build and install the source within a Python venv to allow execution of the script without installation to the system. 
 
 ## Clone the repository 
 
