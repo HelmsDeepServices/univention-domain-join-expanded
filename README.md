@@ -15,6 +15,7 @@ It will perform the following steps for you:
 - Configure PAM
 - Configure SSSD
 - (Optional) Configure NTP
+- (Optional) Configures ldap_access_filter in SSSD. Restrict which users/groups can log in. 
 - (Optional) Configure sync of SSH keys from the LDAP directory if the univention-ssh-key-sync Cool Solution is set up on your Domain Controller. 
   - https://help.univention.com/t/cool-solution-sync-ssh-keys-via-ldap/21315
   - https://github.com/univention/cool-solutions/tree/ucs-5.2/master/univention-ssh-key-sync
@@ -82,7 +83,7 @@ options:
   --login-filter FILTER LDAP filter to restrict which users/groups can log in (e.g., "(memberOf=cn=allowed_group,cn=groups,dc=example,dc=com)"). Configures ldap_access_filter in SSSD.
   --domain DOMAIN       Domain name. Can be left out if the domain is configured for this system
   --dc-ip IP            IP address of the UCS domain controller to join to. Can be used if --domain does not work. If unsure, use the IP of the UCS Master
-  --force-ucs-dns       Change the system's DNS settings and set the UCS DC as DNS nameserver (default is to use the standard network settings, but make
+  --force-ucs-dns       Change the system DNS settings and set the UCS DC as DNS nameserver (default is to use the standard network settings, but make
                         sure the your system can resolve the hostname of the UCS DC and the UCS master system)
   --no-ntp-update       Do not synchronize time with the DC via ntp
   --logfile, -L FILE    Path to log file /var/log/univention/domain-join-cli.log
@@ -172,6 +173,8 @@ print("\tby * +0 break")
 # Notes for `--config-sudo`
 
 For best stability and compatability, I had to make sure the hostnames in my sudo-ldap rules on my Domain Controller were simply [hostname] and not the FQDN [hostname].[domain.com]. This could be something specific to my own environment, but in my case it was necessary.
+
+To allow a user to have sudo access for any command and/or to any computer, simply put `ALL` for the Hosts and/or Command field within the sudo-rule in your Domain Controller. 
 
 # Notes for `--login-filter`
 
