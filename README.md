@@ -136,6 +136,42 @@ If you see the help text, the `univention-domain-join-cli` tool should now be fu
 sudo univention-domain-join-expanded/dependencies/debian12.sh -c
 ```
 
+# Notes for `--config-ssh`
+
+This script creates a computer LDAP object for your machine with an associated password used as the LDAP bind credentials. This computer object is added as a member of the Computers group. You need to ensure members of the Computers group have access to read the ssh key attributes of your LDAP object. I had to accomplish this by modifying the default ssh-key-attributes ACL at `/etc/univention/templates/files/etc/ldap/slapd.conf.d/65ssh-key-attributes-acl` on my Domain Controller to the below:
+
+```shell
+# start 65ssh-key-attributes
+
+@!@
+
+base = configRegistry.get("ldap/base")
+if (
+    configRegistry.get("ldap/server/type") == "master"
+    or configRegistry.get("ldap/server/type") == "domaincontroller_backup"
+):
+    access = "write"
+else:
+    access = "read"
+
+print("# Nur Domain Admins duerfen SSH keys an Nutzerobjekten aendern")
+print("access to attrs=sshAttributes,sshPublicKey")
+print(
+    f'\tby group/univentionGroup/uniqueMember="cn=Domain Admins,cn=groups,{base}" {access}'
+)
+print(
+    f'\tby group/univentionGroup/uniqueMember="cn=Computers,cn=groups,{base}" read'
+)
+print("\tby * +0 break")
+
+@!@
+# end 65ssh-key-attributes
+```
+
+# Notes for `--config-sudo`
+
+For best stability and compatability, I had to make sure the hostnames in my sudo-ldap rules on my Domain Controller were simply [hostname] and not the FQDN [hostname].[domain.com]. This could be something specific to my own environment, but in my case it was necessary.  
+
 # Doc
 
 Documentation on how to build and release this package to launchpad can be found [here](doc/dev.md)
