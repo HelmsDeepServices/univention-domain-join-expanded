@@ -63,6 +63,7 @@ class SssdConfigurator(ConflictChecker):
         sudo_config = ''
         if config_sudo:
             sudo_config = 'ldap_sudo_search_base = cn=sudo-ldap,cn=univention,%s\n' % (ldap_base,)
+            sudo_config += 'ldap_sudo_full_refresh_interval = 180\n'
         
         sssd_conf = \
             '[sssd]\n' \
