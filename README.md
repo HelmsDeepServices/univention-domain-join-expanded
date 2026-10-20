@@ -40,6 +40,7 @@ Univention Domain Join Extended supports the following Linux distributions:
 - `debian13`
   - Debian 13 („Trixie“))
   - Debian 13 LXC (Proxmox)
+  - Proxmox VE 7
 - `debian12`
   - Debian 12 („Bookworm“))
   - Debian 12 LXC (Proxmox)
