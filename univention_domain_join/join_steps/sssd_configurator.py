@@ -155,6 +155,7 @@ class SssdConfigurator(ConflictChecker):
                 if 'sss' in line:
                     userinfo_logger.info('sudoers already configured to use sss in nsswitch.conf')
                     sudoers_configured = True
+                    new_lines.append(line)  # Keep the existing line
                 else:
                     # Add sss to the line
                     new_line = line.rstrip() + ' sss\n'
@@ -174,11 +175,15 @@ class SssdConfigurator(ConflictChecker):
             userinfo_logger.error('Failed to write nsswitch.conf: %s' % e)
             raise
 
-        # Verify the change was written
-        with open(nsswitch_path, 'r') as f:
-            content = f.read()
-            if 'sudoers:' not in content:
-                userinfo_logger.error('Failed to verify sudoers line in nsswitch.conf after write')
-                raise IOError('sudoers line not found in nsswitch.conf after write')
+        # Verify the change was written (only if we made changes)
+        if not sudoers_configured:
+            with open(nsswitch_path, 'r') as f:
+                content = f.read()
+                if 'sudoers:' not in content:
+                    userinfo_logger.error('Failed to verify sudoers line in nsswitch.conf after write')
+                    raise IOError('sudoers line not found in nsswitch.conf after write')
 
-        userinfo_logger.info('Configured nsswitch.conf for sudoers')
+        if sudoers_configured:
+            userinfo_logger.info('nsswitch.conf already has sudoers configured with sss')
+        else:
+            userinfo_logger.info('Configured nsswitch.conf for sudoers')
